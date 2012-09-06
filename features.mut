@@ -31,7 +31,7 @@ if true {
 }
 
 # LOOPS
-dont user loops, it's evil
+dont use loops, it's evil
 instead use sql like syntax
 
 select concat(coll1, coll2)
@@ -50,8 +50,8 @@ validateInt(value) {
 }
 
 struct World {
-  validateInt int X;
-  optional int Y;
+  int X validateInt;
+  int Y optional;
 }
 
 enum PhoneType {

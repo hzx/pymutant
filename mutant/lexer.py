@@ -6,23 +6,30 @@ from exceptions import Exception
 """
 Lexer create token table.
 """
-class Lexer:
+class Lexer(object):
   def __init__(self):
+    # compose and compile tokens regex
     tokens_re = [grammar.STRING_RE, grammar.IDENT_RE, grammar.DIGIT_RE] \
         + [re.escape(token) for token in grammar.SYMBOL_TOKENS]
     self.tokens_re = re.compile('|'.join(tokens_re))
-    self.tokens = []
+
+    # compile alphabet regex
+    self.alpha_re = re.compile(grammar.ALPHA_RE)
 
   def parse(self, sources):
     """
     sources is common.Source objects
     """
+    # parsed results
+    tokens = []
+
+    # parse words in sources
     for source in sources:
       for linenum, line in enumerate(source.lines):
         if linenum in source.skiplines: continue
         # check alphabet
         for c in line:
-          if grammar.ALPHA_RE.search(c) == None:
+          if self.alpha_re.search(c) == None:
             raise Exception('Lexer: unknown symbol %s in file "%s", linenum "%d".' % (c, source.filename, linenum))
 
         # tokenize
@@ -31,10 +38,10 @@ class Lexer:
 
         # add tokens
         for word in result:
-          self.tokens.append(common.Token(source, linenum, word))
+          tokens.append(common.Token(source, linenum, word))
 
-    # detect tokens type
-    for token in self.tokens:
+    # detect words type
+    for token in tokens:
       # check system symbols
       if token.word in grammar.SYMBOL_TOKENS:
         token.wordtype = token.word
@@ -56,6 +63,8 @@ class Lexer:
         token.wordtype = grammar.DIGIT_TYPE
         continue
       raise Exception('unknown token "%s"' % token.word)
+
+    return tokens
 
 if __name__ == "__main__":
   s1 = """

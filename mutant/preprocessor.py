@@ -1,5 +1,4 @@
 from mutant import common
-from mutant import grammar
 import os.path
 import re
 from exceptions import Exception
@@ -10,7 +9,7 @@ Create file table, line table, mark comments line
 array of maps
 { 'filename': '', 'lines': ['', ..], 'skiplines': [num, ..] }
 """
-class Preprocessor:
+class Preprocessor(object):
   def parse(self, filename):
     """
     filename - absolute file path
@@ -77,8 +76,8 @@ class Preprocessor:
     # add filename to table
     self.filetable.append(common.Source(filename, lines, skiplines))
 
-if __name__ == "__main__":
-  preprocessor = Preprocessor()
-  preprocessor.parse('../test/main.mut')
-  print "PARSED SOURCES"
-  for item in preprocessor.filetable: print item.filename
+#if __name__ == "__main__":
+#  preprocessor = Preprocessor()
+#  preprocessor.parse('../test/main.mut')
+#  print "PARSED SOURCES"
+#  for item in preprocessor.filetable: print item.filename

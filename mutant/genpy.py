@@ -1,4 +1,4 @@
 from mutant.genbase import GenBase
 
-class GenPython(GenBase):
+class GenPy(GenBase):
   pass

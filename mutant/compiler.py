@@ -1,7 +1,8 @@
-import tornado.options
-from tornado.options import options
+#import tornado.options
+#from tornado.options import options
+import sys
 
-from mutant.preprocess import Preprocessor
+from mutant.preprocessor import Preprocessor
 from mutant.lexer import Lexer
 from mutant.parser import Parser
 from mutant.generators import GENERATORS
@@ -16,37 +17,26 @@ parse - analyze grammar, create tree
 translate - generate destination level sources
 """
 class Compiler:
-  preprocessor = Preprocessor()
-  lexer = Lexer()
-  parser = Parser()
-
-  # tokens index map - for faster analyze
-  tokenMap = {}
-  
   def __init__(self):
-    # generate tokenMap
-    for index in range(0,  len(TOKENS)):
-      tokenMap[TOKENS[index]] = index
+    self.preprocessor = Preprocessor()
+    self.lexer = Lexer()
+    self.parser = Parser()
 
-  def initialize(self, filename):
-    filenamePath = os.path.abspath(os.path.normpath(filename))
+  def mutate(self, destination, source):
+    self.preprocessor.parse(source)
+    #self.lexer
 
-  # remove comments
-  def preprocess(self, lines):
-    for line in lines:
+def main():
+  #tornado.options.parse_command_line()
+  if len(sys.argv) != 3:
+    print "Compiler accept: destination source"
+    return
 
+  destination = sys.argv[1]
+  source = sys.argv[2]
 
-  def tokenize(self, filename):
-    lines = readlines(filename)
-
-    # find lexemes and create lexemes array
-    # parse lexemes array and set token type (from table)
-
-  def parse(self):
-    # need identifiers table
-    # from lexemes and its token type create lexems tree
+  compiler = Compiler()
+  compiler.mutate(destination, source)
 
 if __name__ == "__main__":
-  tornado.options.parse_command_line()
-  parser = Parser()
-  parser.tokenize(options.mut)
+  main()
