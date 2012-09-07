@@ -3,6 +3,7 @@ from mutant.lexer import *
 from mutant.common import Source
 from mutant.test.features import *
 
+# TODO(dem) refactor tests - refactored Lexer
 
 class LexerTestCase(unittest.TestCase):
   def setUp(self):
