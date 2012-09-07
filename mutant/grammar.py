@@ -29,6 +29,13 @@ ALPHA_RE = '[\ a-zA-Z_0-9\(\)\{\}\[\]\.\,\;\:"\'\^\=\+\-\*/\\\!\?@><%#]'
 # regexes
 IDENT_RE = '[a-zA-Z_][a-zA-Z_0-9]*'
 IDENT_TYPE = 'identifier'
+
+# TODO(dem) replace DIGIT_RE by INT_RE and FLOAT_RE
+INT_RE = '[0-9]+'
+INT_TYPE = 'intdigit'
+FLOAT_RE = '[0-9]+\.[0-9]+'
+FLOAT_TYPE = 'floatdigit'
+
 DIGIT_RE = '[0-9]+\.?[0-9]*'
 DIGIT_TYPE = 'digit'
 STRING_RE = '\"[^".]*\"|\'[^\'.]*\''
@@ -57,6 +64,42 @@ GRAMMAR = [
     { "tagsingle": "< identifier />" },
     ]
 
-gr_type = "(var|bool|int|float|string|identifier){1}([])?"
-gr_vars = "{{type}} identifier (= {{expression}})? ;"
-gr_func = "( (identifier `,`)* ) { (expression `;`)* (return expression ;)? }"
+"""
+Declare grammar.
+"""
+
+GR_TYPE = "var|bool|int|float|string|identifier ([])?"
+GR_TYPE_NAME = "type"
+
+GR_VARIABLE = "{{type}}"
+GR_VARIABLE_NAME = "variable"
+
+GR_PARAMS = ""
+GR_PARAMS_NAME = "params"
+
+GR_FUNCTION = "{{type}} identifier ( ({{params}})* ) {}"
+GR_FUNCTION_NAME = "function"
+
+GR_ENUM = "enum identifier { (identifier = )* }"
+GR_ENUM_NAME = "enum"
+
+GR_STRUCT = ""
+GR_STRUCT_NAME = "struct"
+
+GR_CLASS = ""
+GR_CLASS_NAME = "class"
+
+GR_SELECTFROM = "select from identifier where ()+ (order by (identifier `,`)*)?"
+GR_SELECTFROM_NAME = "selectfrom"
+
+GR_SELECTCONCAT = "select concat ( ({{params}})+ )"
+GR_SELECTCONCAT_NAME = "selectconcat"
+
+gr_tagattrs = ""
+gr_tagattrsname = "tagattrs"
+
+gr_tag = "< identifier {{tagattrs}} > ({{tag}}|{{singletag}})* </ identifier >"
+gr_tag_name = "tag"
+
+gr_singletag = "< identifier {{tagattrs}} />"
+gr_singletag_name = "singletag"
