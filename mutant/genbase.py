@@ -1,3 +1,0 @@
-
-class GenBase:
-  pass

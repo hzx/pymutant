@@ -1,7 +1,6 @@
 from mutant import common
 from mutant import grammar
 from mutant import errors
-import logging
 import re
 import sys
 

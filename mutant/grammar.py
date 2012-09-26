@@ -29,77 +29,108 @@ ALPHA_RE = '[\ a-zA-Z_0-9\(\)\{\}\[\]\.\,\;\:"\'\^\=\+\-\*/\\\!\?@><%#]'
 # regexes
 IDENT_RE = '[a-zA-Z_][a-zA-Z_0-9]*'
 IDENT_TYPE = 'identifier'
-
-# TODO(dem) replace DIGIT_RE by INT_RE and FLOAT_RE
 INT_RE = '[0-9]+'
 INT_TYPE = 'intdigit'
 FLOAT_RE = '[0-9]+\.[0-9]+'
 FLOAT_TYPE = 'floatdigit'
-
-DIGIT_RE = '[0-9]+\.?[0-9]*'
-DIGIT_TYPE = 'digit'
 STRING_RE = '\"[^".]*\"|\'[^\'.]*\''
 STRING_TYPE = 'strlit'
 
-"""
-Grammar consists of regex like syntax.
-Placeholders {{expression_name}} must be replaced.
-"""
-GRAMMAR = [
-    { "contexttype": "var" },
-    { "type": "bool|int|float|string" },
-    { "complextype": "{{type}}[]|identifier[]" }, 
-    { "var": "{{type}} identifier (= expression)? ;" },
-    { "arr": "[ (identifier `,`)* ]" },
-    { "dic": "{ (identifier : expression `,`)* }" },
-    { "func": "identifier ( (identifier `,`)* ) { (expression `;`)* (return expression ;)? }" },
-    { "anonfunc": "( (identifier `,`)* ) { (expression `;`)* (return expression ;)? }" },
-    { "enum": "enum identifier { (identifier = digit ;)* }" },
-    { "struct": "struct identifier { (identifier = expression ;)* }" },
-    { "class": "class identifier { ({{anonfunc}})?|(identifier = expression ;)*|({{func}})* }" },
-    { "classinstance": "identifier ( (identifier `,`)* ) ({ (identifier = expression `,`)* })? ;" },
-    { "selfrom": "select from identifier (where expression)? (order by identifier)?" },
-    { "selconc": "select concat ( (grselfrom `,`)+ )" },
-    { "tag": "< identifier (style = { (identifier : strlit `,`)? })? > (expression)? </ identifier >" },
-    { "tagsingle": "< identifier />" },
-    ]
+TYPE_NAME = "type"
+TYPE = "var|bool|int|float|string|identifier ([])?"
 
-"""
-Declare grammar.
-"""
+CALLFUNC_NAME = "callfunc"
+CALLFUNC = "identifier ( {callparams} )"
 
-GR_TYPE = "var|bool|int|float|string|identifier ([])?"
-GR_TYPE_NAME = "type"
+CALLOBJFUNC_NAME = "callobjfunc"
+CALLOBJFUNC = "identifier.identifier ( {callparams} )"
 
-GR_VARIABLE = "{{type}}"
-GR_VARIABLE_NAME = "variable"
+MULT_NAME = 'mult'
+MULT = '{expression} * {expression}'
 
-GR_PARAMS = ""
-GR_PARAMS_NAME = "params"
+MULTASSIGN_NAME = 'multassign'
+MULTASSIGN = 'identifier *= {expression}'
 
-GR_FUNCTION = "{{type}} identifier ( ({{params}})* ) {}"
-GR_FUNCTION_NAME = "function"
+DIV_NAME = 'div'
+DIV = '{expression} / {expression}'
 
-GR_ENUM = "enum identifier { (identifier = )* }"
-GR_ENUM_NAME = "enum"
+DIVASSIGN_NAME = 'divassign'
+DIVASSIGN = 'identifier /= {expression}'
 
-GR_STRUCT = ""
-GR_STRUCT_NAME = "struct"
+ADD_NAME = 'add'
+ADD = '{expression} + {expression}'
 
-GR_CLASS = ""
-GR_CLASS_NAME = "class"
+ADDASSIGN_NAME = 'addassign'
+ADDASSIGN = 'identifier += {expression}'
 
-GR_SELECTFROM = "select from identifier where ()+ (order by (identifier `,`)*)?"
-GR_SELECTFROM_NAME = "selectfrom"
+SUB_NAME = 'sub'
+SUB = '{expression} - {expression}'
 
-GR_SELECTCONCAT = "select concat ( ({{params}})+ )"
-GR_SELECTCONCAT_NAME = "selectconcat"
+SUBASSIGN_NAME = 'subassign'
+SUBASSIGN = 'identifier -= {expression}'
 
-gr_tagattrs = ""
-gr_tagattrsname = "tagattrs"
+GREATER_NAME = 'greater'
+GREATER = '{expression} > {expression}'
 
-gr_tag = "< identifier {{tagattrs}} > ({{tag}}|{{singletag}})* </ identifier >"
-gr_tag_name = "tag"
+LESS_NAME = 'less'
+LESS = '{expression} < {expression}'
 
-gr_singletag = "< identifier {{tagattrs}} />"
-gr_singletag_name = "singletag"
+GREATEREQUAL_NAME = 'greaterequal'
+GREATEREQUAL = '{expression} >= {expression}'
+
+LESSEQUAL_NAME = 'lessequal'
+LESSEQUAL = '{expression} <= {expression}'
+
+EXPRESSION_NAME = "expression"
+EXPRESSION = "identifier|{callfunc}|identifier.identifier|{callobjfunc}|{multiply}|{divide}"
+
+VARDECLARE_NAME = "vardeclare"
+VARDECLARE = "{type} identifier (= {expression})? ;"
+
+VARASSIGN_NAME = "varassign"
+VARASSIGN = "identifier = {expression} ;"
+
+MAPBODY_NAME = 'mapbody'
+MAPBODY = '{ identifier : {variable}|{strlit} }'
+
+PARAMS_NAME = "params"
+PARAMS = "({type} identifier `,`)*"
+
+CALLPARAMS_NAME = "callparams"
+CALLPARAMS = "({expression} `,`)*"
+
+FUNCTION_NAME = "function"
+FUNCTION = "{type} identifier ( {params} ) {  }"
+
+ENUM_NAME = "enum"
+ENUM = "enum identifier { (identifier = {intdigit} ;)* }"
+
+STRUCT_NAME = "struct"
+STRUCT = "struct identifier { ({type} identifier ;)* }"
+
+CONSTRUCTOR_NAME = "constructor"
+CONSTRUCTOR = "( {params} ) {  }"
+
+CLASS_NAME = "class"
+CLASS = "class identifier (extends identifier)? { {constructor}|{variable}|{function} }"
+
+SELECTORDERBY_NAME = 'selectorderby'
+SELECTORDERBY = 'order by (identifier `,`)*'
+
+SELECTFROM_NAME = "selectfrom"
+SELECTFROM = "select from identifier where {expression} ({selectorderby})?"
+
+CONCATPARAMS_NAME = "concatparams"
+CONCATPARAMS = "({expression} `,`){2,}"
+
+SELECTCONCAT_NAME = "selectconcat"
+SELECTCONCAT = "select concat {concatparams}"
+
+TAGATTRS_NAME = "tagattrs"
+TAGATTRS = "identifier = {mapbody}|{variable}|{strlit}|identifier"
+
+TAG_NAME = "tag"
+TAG = "< identifier {tagattrs} > ({tag}|{singletag})* </ identifier >"
+
+SINGLETAG_NAME = "singletag"
+SINGLETAG = "< identifier {tagattrs} />"

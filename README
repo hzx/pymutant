@@ -1,18 +1,10 @@
-
-Overview.
-=========
+Overview
+========
 
 Mutant language is domain specific language, aims to abstract languages
-distinction and focus on problem solving.
+distinction and focus on problem solving (interface, reactive systems
+development).
 
-Code validate by parser grammar rules.
-
-Source code parse to code tree and
-translate by generators to specific language (python, coffeescript, c++). Generators
-map mutant semantic nodes to specific language.
-
-[Парсер]
-Дана последовательность токенов. Есть грамматика языка (шаблоны).
-Нужно сгенерировать семантическое дерево, с одновременной проверкой грамматики.
-Алгоритм - искать последовательности токенов, удовлетворяющих одному из шаблонов
-грамматики языка и создавать соответствующий языковой узел.
+Code validate by parser grammar rules. Source code parse to code tree
+and translate by generators to specific language (python, coffeescript,
+c++). Generators map mutant semantic nodes to specific language nodes.

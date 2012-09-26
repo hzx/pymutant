@@ -1,7 +1,14 @@
-from mutant.gencoffee import GenCoffee
-from mutant.genpy import GenPy
+from mutant.coffeegen import CoffeeGen
+from mutant.pygen import PyGen
 
-GENERATORS = {
-    'py': GenPy(),
-    'coffee': GenCoffee(),
-    }
+
+class GenFactory(object):
+
+  def __init__(self):
+    self.generators = {
+        'py': PyGen(),
+        'coffee': CoffeeGen(),
+        }
+
+  def getNamedGen(self, name):
+    return self.generators[name]
