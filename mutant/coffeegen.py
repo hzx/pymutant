@@ -6,6 +6,9 @@ class CoffeeGen(Gen):
   def __init__(self):
     pass
 
+  def convert(self, nodes):
+    pass
+
   def createVar(self, node):
     pass
 

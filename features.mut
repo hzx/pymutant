@@ -1,7 +1,5 @@
-Запускать приложение с параметрами сколько оперативной памяти выделить
-приложению (написать менеджер памяти, выделение памяти, причесывание памяти),
-порт для отсылки сигнала что оперативная память превышена
-и прочие коды ошибок. Это мысли с учетом реализации на с++.
+
+COMMENTS
 
 # bash like one line comments
 
@@ -9,28 +7,62 @@
 multiline comment
 */
 
-# boolean operations
+
+
+OPERATORS
+
 or
 and
 is
 isnot
+not
 in
++
++=
+-
+-=
+*
+*=
+/
+/=
 
-# generate array from a to b by step
-[a..b] by step
-arr[limit:offset]
 
-# regexes
+
+TYPES
+
+var
+bool
+int
+float
+string
+type[]
+type:type{}
+name - enum, class, define name
+
+
+
+SYSTEM VALUES
+
+true
+false
+none
+
+
+
+REGEXES
 
 /^\s*$/gi
 
-# CODE FLOWS
 
-if true {
+
+CODE FLOWS
+
+if expression {
+  complex_operator
 } else {
+  complex_operator
 }
 
-# LOOPS
 dont use loops, it's evil
 instead use sql like syntax
 
@@ -61,22 +93,22 @@ enum PhoneType {
 }
 
 class Foo {
-  data = expression; # may use self keyword
-  name;
+  type data = expression; # may use self keyword
+  type name;
 
   // constructor
   () {
   }
 
-  work() {
+  type work() {
   }
 }
 
 # instantiate
 
-foo = Foo();
+type foo = Foo();
 
-foo = Foo() {
+type foo = Foo() {
   data: "dat1",
   name: "Vasya"
 };

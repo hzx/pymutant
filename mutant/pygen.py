@@ -6,7 +6,10 @@ class PyGen(Gen):
   def __init__(self):
     pass
 
-  def createVar(self, node):
+  def convert(self, nodes):
+    pass
+
+  def createVariable(self, node):
     pass
 
   def createFunction(self, node):

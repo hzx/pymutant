@@ -1,3 +1,4 @@
+from mutant import grammar as gr
 from abc import abstractmethod
 
 
@@ -7,10 +8,12 @@ class Node(object):
   def __init__(self):
     pass
 
+  # TODO(dem) deprecated
   @abstractmethod
   def convertNode(self, gen): pass
 
-class VarNode(Node):
+class VariableNode(Node):
+  nodename = gr.VARIABLE_NAME
 
   def __init__(self, name):
     self.name = name
@@ -18,7 +21,14 @@ class VarNode(Node):
   def convertNode(self, gen):
     return gen.createVar(self)
 
+class FunctionNode(Node):
+  nodename = gr.FUNCTION_NAME
+
+  def __init__(self, name):
+    self.name = name
+
 class EnumNode(Node):
+  nodename = gr.ENUM_NAME
 
   def __init__(self, name):
     self.name = name
@@ -27,6 +37,7 @@ class EnumNode(Node):
     return gen.createEnum(self)
 
 class StructNode(Node):
+  nodename = gr.STRUCT_NAME
 
   def __init__(self, name):
     self.name = name
@@ -35,6 +46,7 @@ class StructNode(Node):
     return gen.createStruct(self)
 
 class ClassNode(Node):
+  nodename = gr.CLASS_NAME
 
   def __init__(self, name):
     self.name = name
@@ -43,6 +55,7 @@ class ClassNode(Node):
     return gen.createClass(self)
 
 class SelectFromNode(Node):
+  nodename = gr.SELECTFROM_NAME
 
   def __init__(self, name):
     self.name = name
@@ -51,6 +64,7 @@ class SelectFromNode(Node):
     return gen.createSelectFrom(self)
 
 class SelectConcatNode(Node):
+  nodename = gr.SELECTCONCAT_NAME
 
   def __init__(self, names):
     self.names = names
@@ -59,6 +73,7 @@ class SelectConcatNode(Node):
     return gen.createSelectConcat(self)
 
 class TagNode(Node):
+  nodename = gr.TAG_NAME
 
   def __init__(self, name):
     self.name = name
@@ -71,6 +86,9 @@ class Gen(object):
 
   def __init__(self):
     pass
+
+  @abstractmethod
+  def convert(self, nodes): pass
 
   @abstractmethod
   def createVar(self, node): pass
@@ -95,3 +113,8 @@ class Gen(object):
 
   @abstractmethod
   def createTag(self, node): pass
+
+class Formatter(object):
+
+  @abstractmethod
+  def format(self, nodes): pass

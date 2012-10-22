@@ -1,15 +1,22 @@
-from mutant import common
+from mutant.common import Source
 import os.path
 import re
 from exceptions import Exception
 
-"""
-Take input mutant file.
-Create file table, line table, mark comments line
-array of maps
-{ 'filename': '', 'lines': ['', ..], 'skiplines': [num, ..] }
-"""
 class Preprocessor(object):
+  """
+  Take input mutant file.
+  Create file table, line table, mark comments line
+  array of maps
+  { 'filename': '', 'lines': ['', ..], 'skiplines': [num, ..] }
+  """
+
+  def initialize(self, paths):
+    """
+    paths - language paths where to find sources
+    """
+    self.paths = paths
+
   def parse(self, filename):
     """
     filename - absolute file path
@@ -26,6 +33,10 @@ class Preprocessor(object):
     self.parseFile(rootpath, filename)
 
     return self.filetable
+
+  def pkgToFilename(self, pkg):
+    names = pkg.split('.')
+    return '/'.join(names) + '.mut'
 
   def parseFile(self, parentdir, filename):
     """
@@ -53,7 +64,7 @@ class Preprocessor(object):
       files = re.findall('^import\s+(.+)$', line)
       if len(files) > 0:
         skiplines.append(linenum)
-        self.parseFile(filedir, files[0])
+        self.parseFile(filedir, self.pkgToFilename(files[0]))
         continue
       # search multiline comment begin
       result = re.findall('^\s*/\*', line)
@@ -74,7 +85,7 @@ class Preprocessor(object):
         continue
 
     # add filename to table
-    self.filetable.append(common.Source(filename, lines, skiplines))
+    self.filetable.append(Source(filename, lines, skiplines))
 
 #if __name__ == "__main__":
 #  preprocessor = Preprocessor()

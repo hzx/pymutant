@@ -14,10 +14,10 @@ FLOAT_LITERAL_TOKENS = [
     ]
 
 STRING_LITERAL_CODE = """
-var MSG = "hello world";
+var MSG = 'hello world';
 """
 STRING_LITERAL_TOKENS = [
-    'var', 'MSG', '=', '"hello world"', ';'
+    'var', 'MSG', '=', '\'hello world\'', ';'
     ]
 
 BOOL_VAR_CODE = """
@@ -42,10 +42,10 @@ FLOAT_VAR_TOKENS = [
     ]
 
 STRING_VAR_CODE = """
-string message = "Hello, world!";
+string message = 'Hello, world!';
 """
 STRING_VAR_TOKENS = [
-    'string', 'message', '=', '"Hello, world!"', ';'
+    'string', 'message', '=', '\'Hello, world!\'', ';'
     ]
 
 BOOL_ARRAY_VAR_CODE = """
@@ -70,10 +70,10 @@ FLOAT_ARRAY_VAR_TOKENS = [
     ]
 
 STRING_ARRAY_VAR_CODE = """
-string[] colors = ["red", "green", "blue"];
+string[] colors = ['red', 'green', 'blue'];
 """
 STRING_ARRAY_VAR_TOKENS = [
-    'string', '[', ']', 'colors', '=', '[', '"red"', ',', '"green"', ',', '"blue"', ']', ';'
+    'string', '[', ']', 'colors', '=', '[', "'red'", ',', "'green'", ',', "'blue'", ']', ';'
     ]
 
 IDENTIFIER_ARRAY_VAR_CODE = """
@@ -168,17 +168,17 @@ CLASS_TOKENS = [
     ]
 
 XML_TAG_SINGLE_CODE = """
-<identifier style={fontSize: "12px", color: "#d6d6d6"}></identifier>
+<identifier style={fontSize: '12px', color: '#d6d6d6'}></identifier>
 """
 XML_TAG_SINGLE_TOKENS = [
-    '<', 'identifier', 'style', '=', '{', 'fontSize', ':', '"12px"', ',', 'color', ':', '"#d6d6d6"', '}', '>', '</', 'identifier', '>'
+    '<', 'identifier', 'style', '=', '{', 'fontSize', ':', "'12px'", ',', 'color', ':', "'#d6d6d6'", '}', '>', '</', 'identifier', '>'
     ]
 
 XML_TAG_CODE = """
-<identifier style={fontSize: "12px", color: "#d6d6d6"}/>
+<identifier style={fontSize: '12px', color: '#d6d6d6'}/>
 """
 XML_TAG_TOKENS = [
-    '<', 'identifier', 'style', '=', '{', 'fontSize', ':', '"12px"', ',', 'color', ':', '"#d6d6d6"', '}', '/>'
+    '<', 'identifier', 'style', '=', '{', 'fontSize', ':', "'12px'", ',', 'color', ':', "'#d6d6d6'", '}', '/>'
     ]
 
 SELECT_FROM_CODE = """
