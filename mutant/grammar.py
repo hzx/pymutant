@@ -10,7 +10,7 @@ SYMBOL_TOKENS = [
     ]
 
 SYSTEM_TOKENS = [
-    'define', 'import', 'extern', 'return',
+    'define', 'import', 'extern', 'return', 'as',
     'var', 'bool', 'int', 'float', 'string',
     'true', 'false', 'return', 'none',
     'static', 'interface', 'class', 'struct', 'enum', 'optional', 'extends',
