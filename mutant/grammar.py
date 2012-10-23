@@ -82,8 +82,11 @@ ARRAYTYPE = '{simpletype} []'
 MAPTYPE_NAME = 'maptype'
 MAPTYPE = '{simpletype} : {simpletype} {}'
 
+SETTYPE_NAME = 'settype'
+SETTYPE = '{simpletype} {}'
+
 TYPE_NAME = "type"
-TYPE = "{arraytype}|{maptype}|{simpletype}"
+TYPE = "{arraytype}|{maptype}|{settype}|{simpletype}"
 
 IFELSE_NAME = 'ifelse'
 IFELSE = 'if {expression} { {expression} } ({else})?'

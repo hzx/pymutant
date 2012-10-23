@@ -76,5 +76,5 @@ class GrammarParserTest(unittest.TestCase):
 
   def testParseSourceType(self):
     actual = self.parser.parseSource(gr.TYPE)
-    expected = ['{arraytype}|{maptype}|{simpletype}']
+    expected = ['{arraytype}|{maptype}|{settype}|{simpletype}']
     self.assertListEqual(actual, expected)
