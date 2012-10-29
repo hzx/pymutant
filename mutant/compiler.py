@@ -3,7 +3,7 @@
 import sys
 import os.path
 from mutant.grammarparser import GrammarParser
-from mutant.preprocessor import Preprocessor
+from mutant.loader import Loader
 from mutant.lexer import Lexer
 from mutant.parser import Parser
 from mutant.generators import GenFactory
@@ -20,23 +20,28 @@ class Compiler:
 
   def __init__(self):
     self.grammarparser = GrammarParser()
-    self.preprocessor = Preprocessor()
+    self.loader = Loader()
     self.lexer = Lexer()
     self.parser = Parser()
     self.genfactory = GenFactory()
 
-  def mutate(self, dest, src, genname):
+  def setPaths(self, srcPaths, destPath):
+    self.loader.setPaths(srcPaths)
+    self.destPath = destPath
+
+  def mutate(self, modulename, genname):
     rules = self.grammarparser.getRules()
     gen = self.genfactory.createGen(genname)
     formatter = self.genfactory.createFormatter(genname)
 
-    sources = self.preprocessor.parse(src)
-    tokens = self.lexer.parse(sources)
-    srctree = self.parser.parse(tokens, rules)
+    module = self.loader.loadModule(modulename)
+    # TODO(dem) change to module structure
+    self.lexer.parse(module)
+    self.parser.parse(module, rules)
     desttree = gen.convert(srctree)
     destlines = formatter.convert(desttree)
 
-    self.save(dest, destlines)
+    self.save(self.destPath, destlines)
 
   def save(self, filename, lines):
     with open(filename, 'w') as f:

@@ -20,28 +20,20 @@ class Lexer(object):
     # parsed results
     self.tokens = []
 
-  def parse(self, sources):
+  def parse(self, module):
     """
-    sources is common.Source objects
+    module - main module
     """
     # parse words in sources
-    #for source in self.sources:
-    #  self.parseSource(source)
-    tokens = reduce(lambda x, y: x+y, map(self.parseSource, sources))
-
-    # detect words type
-    for token in self.tokens:
-      token.wordtype = self.detectTokenType(token.word)
-    #reduce(lambda x, y: x, map(self.detectTokenType, rawTokens))
-
-    self.tokens = tokens
-
-    return tokens
+    for source in module.sources:
+      self.parseSource(source)
 
   def parseSource(self, source):
     tokens = []
+
     for linenum, line in enumerate(source.lines):
       if linenum in source.skiplines: continue
+
       # check alphabet
       for c in line:
         if self.alpha_re.search(c) == None:
@@ -53,9 +45,9 @@ class Lexer(object):
 
       # add tokens
       for word in result:
-        tokens.append(common.Token(source, linenum, word))
+        tokens.append(common.Token(linenum, word, self.detectWordType(word)))
 
-    return tokens
+    source.tokens = tokens
 
   def detectWordType(self, word):
     # check system symbols

@@ -5,38 +5,40 @@ class Error(Exception):
   """Mutant base error."""
   pass
 
-class LexerError(Error):
-  """Lexer base error."""
+class PathNotFound(Error):
+
+  def __init__(self, path):
+    Exception.__init__(self, 'Path not found, %s', path)
+
+class ModuleNotFound(Error):
+
+  def __init__(self, name, referer=None):
+    if referer != None:
+      Exception.__init__(self, 'Module not found "%s", referer "%s"' %
+          (name, referer))
+    else:
+      Exception.__init__(self, 'Module not found "%s"' % name)
+
+class UnknownSymbol(Error):
   pass
 
-class UnknownSymbol(LexerError):
+class UnknownToken(Error):
   pass
 
-class UnknownToken(LexerError):
-  pass
-
-class ParserError(Error):
-  """Parser base error."""
-  pass
-
-class RoundBracketError(ParserError):
+class RoundBracketError(Error):
   '''Match pair round bracket'''
 
   def __init__(self, filename):
     Exception.__init__(self, 'round bracket not match, "%s"' % filename)
 
-class SquareBracketError(ParserError):
+class SquareBracketError(Error):
   '''Match pair square bracket'''
 
   def __init__(self, filename):
     Exception.__init__(self, 'square bracket not match "%s"' % filename)
 
-class CurlyBracketError(ParserError):
+class CurlyBracketError(Error):
   '''Match pair curly bracket'''
 
   def __init__(self, filename):
     Exception.__init__(self, 'curly bracket not match "%s"' % filename)
-
-class GenError(Error):
-  """Generator base error."""
-  pass

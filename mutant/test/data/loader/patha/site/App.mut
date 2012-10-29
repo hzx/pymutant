@@ -1,0 +1,8 @@
+
+
+class App {
+
+  int run(string[] args, int argc) {
+    return 0;
+  }
+}

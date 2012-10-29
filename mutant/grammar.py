@@ -11,10 +11,10 @@ SYMBOL_TOKENS = [
 
 SYSTEM_TOKENS = [
     'define', 'import', 'extern', 'return', 'as',
-    'var', 'bool', 'int', 'float', 'string',
+    'var', 'bool', 'int', 'float', 'string', 'tag', 'event',
     'true', 'false', 'return', 'none',
     'static', 'interface', 'class', 'struct', 'enum', 'optional', 'extends',
-    'implements',
+    'implements', 'this',
     'if', 'else',
     'select', 'concat', 'from', 'where', 'and', 'or', 'is', 'in', 'not', 'order', 'by', 
     'map', 'reduce',
@@ -35,6 +35,8 @@ ALPHA_RE = '[\ a-zA-Z0-9_\(\)\{\}\[\]\.\,\;\:\'\^\=\+\-\*/\\\?><#!%]'
 
 NAME_RE = '[_a-zA-Z][_a-zA-Z0-9]*'
 NAME_TYPE = 'name'
+TAGNAME_RE = '<%s' % NAME_RE
+TAGNAME_TYPE = 'tagname'
 LITINT_RE = '[0-9]+'
 LITINT_TYPE = 'litint'
 LITFLOAT_RE = '[0-9]+\.[0-9]+'
@@ -51,7 +53,7 @@ FUNCTION_NAME = "function"
 FUNCTION = "({type})? (name)? ( {params} ) { {funcbody} }"
 
 ENUM_NAME = "enum"
-ENUM = "enum name { (name = {intdigit} ;)* }"
+ENUM = "enum name { (name = {litint} ;)* }"
 
 STRUCT_NAME = "struct"
 STRUCT = "struct name { ({type} name ;)* }"
@@ -73,17 +75,20 @@ SINGLETAG = "< name {tagattrs} />"
 
 # Subgrammar rules
 
+NAMETYPE_NAME = 'nametype'
+NAMETYPE = '(name .)* name'
+
 SIMPLETYPE_NAME = 'simpletype'
-SIMPLETYPE = 'bool|int|float|string|name|tag|event'
+SIMPLETYPE = 'bool|int|float|string|{nametype}|tag|event'
 
 ARRAYTYPE_NAME = 'arraytype'
-ARRAYTYPE = '{simpletype} []'
+ARRAYTYPE = '{simpletype} [ ]'
 
 MAPTYPE_NAME = 'maptype'
-MAPTYPE = '{simpletype} : {simpletype} {}'
+MAPTYPE = '{simpletype} : {simpletype} { }'
 
 SETTYPE_NAME = 'settype'
-SETTYPE = '{simpletype} {}'
+SETTYPE = '{simpletype} { }'
 
 TYPE_NAME = "type"
 TYPE = "{arraytype}|{maptype}|{settype}|{simpletype}"
