@@ -40,29 +40,22 @@ class BracketChecker(object):
       raise errors.CurlyBracketError(self.source.filename)
 
   def check(self, tokens):
-    self.source = None
+    self._resetCounters()
     for token in tokens:
-      if self.source != token.source:
-        if self.source != None: self._checkCounters()
-        self.source = token.source
-        self._resetCounters()
       self._calculateCounters(token.word)
-    if self.source != None: self._checkCounters()
+    self._checkCounters()
 
 class Parser(object):
 
   def __init__(self):
-    self.variables = []
-    self.functions = []
-    self.enums = []
-    self.structs = []
-    self.classes = []
-    
     self.bracketChecker = BracketChecker()
 
     self.firstOperators = ['+', '-']
     self.secondOperators = ['*', '/']
     self.thirdOperators = ['not']
+
+    # compile rules
+
 
   def parse(self, tokens):
     self.bracketChecker.check(tokens)
