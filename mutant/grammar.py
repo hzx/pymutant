@@ -35,8 +35,6 @@ ALPHA_RE = '[\ a-zA-Z0-9_\(\)\{\}\[\]\.\,\;\:\'\^\=\+\-\*/\\\?><#!%]'
 
 NAME_RE = '[_a-zA-Z][_a-zA-Z0-9]*'
 NAME_TYPE = 'name'
-TAGNAME_RE = '<%s' % NAME_RE
-TAGNAME_TYPE = 'tagname'
 LITINT_RE = '[0-9]+'
 LITINT_TYPE = 'litint'
 LITFLOAT_RE = '[0-9]+\.[0-9]+'
@@ -46,26 +44,50 @@ LITSTRING_TYPE = 'litstring'
 
 # Main grammar rules
 
+DEFINE_NAME = "define"
+DEFINE = "define name {expression}! ;"
+
 VARIABLE_NAME = "variable"
-VARIABLE = "var|{type} name (= {expression})? ;"
+VARIABLE = "var|{type} name (= {varbody}!)? ;"
 
 FUNCTION_NAME = "function"
-FUNCTION = "({type})? (name)? ( {params} ) { {funcbody} }"
+FUNCTION = "({type})? (name)? ( {params} ) { {funcbody}! }"
 
 ENUM_NAME = "enum"
-ENUM = "enum name { (name = {litint} ;)* }"
+ENUM = "enum name { {enumbody} }"
 
 STRUCT_NAME = "struct"
-STRUCT = "struct name { ({type} name ;)* }"
+STRUCT = "struct name { {structbody} }"
 
 CLASS_NAME = "class"
-CLASS = "class name (extends name)? { {constructor}|{variable}|{function} }"
+CLASS = "class name (extends name)? { {classbody} }"
+
+# Subgrammar rules
+
+VARBODY_NAME = 'varbody'
+VARBODY = '{selectfrom}|{selectconcat}|{expression}!'
+
+ENUMBODY_NAME = 'enumbody'
+ENUMBODY = '(name = {litint} ;)*'
+
+STRUCTBODY_NAME = 'structbody'
+STRUCTBODY = '({type} name ;)*'
+
+CLASSBODY_NAME = 'classbody'
+CLASSBODY = '{constructor}|{variable}|{function}'
+
+# Query
 
 SELECTFROM_NAME = "selectfrom"
-SELECTFROM = "select from name where {expression} (order by {orderbyparams})?"
+SELECTFROM = "select from name where {expression}! (order by {orderbyparams})?"
 
 SELECTCONCAT_NAME = "selectconcat"
 SELECTCONCAT = "select concat {concatparams}"
+
+ORDERBYPARAMS_NAME = 'orderbyparams'
+ORDERBYPARAMS = '(name `,`)+'
+
+# HTML
 
 TAG_NAME = "tag"
 TAG = "< name {tagattrs} > ({tag}|{singletag})* </ name >"
@@ -73,10 +95,13 @@ TAG = "< name {tagattrs} > ({tag}|{singletag})* </ name >"
 SINGLETAG_NAME = "singletag"
 SINGLETAG = "< name {tagattrs} />"
 
-# Subgrammar rules
+TAGATTRS_NAME = 'tagattrs'
+TAGATTRS = ''
+
+# Type
 
 NAMETYPE_NAME = 'nametype'
-NAMETYPE = '(name .)* name'
+NAMETYPE = '(name `.`)+'
 
 SIMPLETYPE_NAME = 'simpletype'
 SIMPLETYPE = 'bool|int|float|string|{nametype}|tag|event'
@@ -93,34 +118,25 @@ SETTYPE = '{simpletype} { }'
 TYPE_NAME = "type"
 TYPE = "{arraytype}|{maptype}|{settype}|{simpletype}"
 
-IFELSE_NAME = 'ifelse'
-IFELSE = 'if {expression} { {expression} } ({else})?'
+# funcbody
+
+IF_NAME = 'if'
+IF = 'if {expression}! { {funcbody}! } ({else})?'
 
 ELSE_NAME = 'else'
-ELSE = 'else { {expression} }'
-
-VARLOCAL_NAME = 'varlocal'
-VARLOCAL = '(var|{type})? (this .)? name (= {expression})? ;'
+ELSE = 'else { {funcbody}! }'
 
 FUNCCALL_NAME = 'funccall'
-FUNCCALL = '(this .)? name ( {callparams} )'
+FUNCCALL = '{nametype} ( {callparams} )'
 
 PARAMS_NAME = "params"
 PARAMS = "({type} name `,`)*"
 
-ORDERBYPARAMS_NAME = 'orderbyparams'
-ORDERBYPARAMS = '(name `,`)+'
-
 CALLPARAMS_NAME = "callparams"
-CALLPARAMS = "({expression} `,`)*"
+CALLPARAMS = "({expression}! `,`)*"
 
 CONSTRUCTORCALL_NAME = 'constructorcall'
-CONSTRUCTORCALL = 'name ( ) { (name : {expression} `,`)* } ;'
-
-# TODO(dem) solve more complex parsing operators
-
-FUNCBODY_NAME = 'funcbody'
-FUNCBODY = '({expression} `;`)* (return)? ({expression} `;`)*'
+CONSTRUCTORCALL = 'name ( ) { (name : {varbody} `,`)* } ;'
 
 # CALLFUNC_NAME = "callfunc"
 # CALLFUNC = "name ( {callparams} )"
@@ -190,3 +206,68 @@ FUNCBODY = '({expression} `;`)* (return)? ({expression} `;`)*'
 # 
 # TAGATTRS_NAME = "tagattrs"
 # TAGATTRS = "name = {mapbody}|{variable}|{strlit}|name"
+
+RULES = {
+    # main grammar rules
+    DEFINE_NAME: DEFINE,
+    VARIABLE_NAME: VARIABLE,
+    FUNCTION_NAME: FUNCTION,
+    ENUM_NAME: ENUM,
+    STRUCT_NAME: STRUCT,
+    CLASS_NAME: CLASS,
+    # subrules
+    ENUMBODY_NAME: ENUMBODY,
+    STRUCTBODY_NAME: STRUCTBODY,
+    CLASSBODY_NAME: CLASSBODY,
+    # query
+    SELECTFROM_NAME: SELECTFROM,
+    SELECTCONCAT_NAME: SELECTCONCAT,
+    ORDERBYPARAMS_NAME: ORDERBYPARAMS,
+    # HTML
+    TAG_NAME: TAG,
+    SINGLETAG_NAME: SINGLETAG,
+    # type
+    NAMETYPE_NAME: NAMETYPE,
+    SIMPLETYPE_NAME: SIMPLETYPE,
+    ARRAYTYPE_NAME: ARRAYTYPE,
+    MAPTYPE_NAME: MAPTYPE,
+    SETTYPE_NAME: SETTYPE,
+    TYPE_NAME: TYPE,
+    # funcbody
+    IF_NAME: IF,
+    ELSE_NAME: ELSE,
+    FUNCCALL_NAME: FUNCCALL,
+    PARAMS_NAME: PARAMS,
+    CALLPARAMS_NAME: CALLPARAMS,
+    CONSTRUCTORCALL_NAME: CONSTRUCTORCALL,
+    }
+
+GLOBAL_RULES = [
+    DEFINE_NAME,
+    VARIABLE_NAME,
+    FUNCTION_NAME,
+    ENUM_NAME,
+    STRUCT_NAME,
+    CLASS_NAME,
+    ]
+
+EXPRESSION_RULES = [
+    SELECTFROM_NAME,
+    SELECTCONCAT_NAME,
+    SINGLETAG_NAME,
+    TAG_NAME,
+    ]
+
+FUNCBODY_RULES = [
+    VARIABLE_NAME,
+    IF_NAME,
+    ]
+
+ENUMBODY_RULES = [
+    ]
+
+STRUCTBODY_RULES = [
+    ]
+
+CLASSBODY_RULES = [
+    ]

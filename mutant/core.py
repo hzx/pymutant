@@ -54,6 +54,12 @@ class ClassNode(Node):
   def convertNode(self, gen):
     return gen.createClass(self)
 
+class IfNode(Node):
+  nodename = gr.IF_NAME
+
+  def __init__(self):
+    pass
+
 class SelectFromNode(Node):
   nodename = gr.SELECTFROM_NAME
 

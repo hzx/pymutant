@@ -45,6 +45,13 @@ class BracketChecker(object):
       self._calculateCounters(token.word)
     self._checkCounters()
 
+
+class NameContext(object):
+
+  def __init__(self, context):
+    pass
+
+
 class Parser(object):
 
   def __init__(self):
@@ -55,7 +62,6 @@ class Parser(object):
     self.thirdOperators = ['not']
 
     # compile rules
-
 
   def parse(self, tokens):
     self.bracketChecker.check(tokens)

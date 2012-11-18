@@ -29,12 +29,12 @@ class Compiler:
     self.loader.setPaths(srcPaths)
     self.destPath = destPath
 
-  def mutate(self, modulename, genname):
+  def mutate(self, mainmodule, genname):
     rules = self.grammarparser.getRules()
     gen = self.genfactory.createGen(genname)
     formatter = self.genfactory.createFormatter(genname)
 
-    module = self.loader.loadModule(modulename)
+    module = self.loader.loadModule(mainmodule)
     # TODO(dem) change to module structure
     self.lexer.parse(module)
     self.parser.parse(module, rules)
