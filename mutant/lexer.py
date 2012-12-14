@@ -4,10 +4,11 @@ from mutant import errors
 import re
 import sys
 
-"""
-Lexer create token table.
-"""
 class Lexer(object):
+  """
+  Lexer create token table.
+  """
+
   def __init__(self):
     # compose and compile tokens regex
     tokens_re = [gr.LITSTRING_RE, gr.NAME_RE, gr.LITFLOAT_RE, gr.LITINT_RE] \
@@ -37,7 +38,7 @@ class Lexer(object):
       # check alphabet
       for c in line:
         if self.alpha_re.search(c) == None:
-          raise errors.UnknownSymbol('unknown symbol %s in file "%s", linenum "%d".' % (c, source.filename, linenum))
+          raise errors.UnknownSymbol('unknown symbol "%s" in file "%s", linenum "%d".' % (c, source.filename, linenum))
 
       # tokenize
       result = self.tokens_re.findall(line)

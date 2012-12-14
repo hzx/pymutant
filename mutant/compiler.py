@@ -30,7 +30,12 @@ class Compiler:
     self.destPath = destPath
 
   def mutate(self, mainmodule, genname):
-    rules = self.grammarparser.getRules()
+    rules = self.grammarparser.compileRules()
+
+    # link compiled rule names with real handlers
+    # hm = self.grammarparser.handleMap
+    # hm[] = self.createClass
+
     gen = self.genfactory.createGen(genname)
     formatter = self.genfactory.createFormatter(genname)
 

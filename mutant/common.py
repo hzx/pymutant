@@ -1,5 +1,9 @@
 
 
+def getTokensRange(leftIndex, rightIndex, tokens):
+  return enumerate(tokens[leftIndex:rightIndex+1], leftIndex)
+
+
 class Token(object):
   """
   Language word.
@@ -29,61 +33,9 @@ class Module(object):
     self.sources = sources
 
     self.modules = {}
+    self.aliasModules = {}
     self.variables = {}
     self.functions = {}
     self.enums = {}
     self.structs = {}
     self.classes = {}
-
-"""
-Language semantic elements.
-"""
-
-class Variable(object):
-
-  def __init__(self, identifier, value=None):
-    self.identifier = identifier
-    self.value = value
-
-class Function(object):
-
-  def __init__(self):
-    pass
-
-  def addParameter(self, param):
-    pass
-
-class Enum(object):
-
-  def __init__(self):
-    pass
-
-  def addMember(self):
-    pass
-
-class Struct(object):
-
-  def __init__(self):
-    pass
-
-class Class(object):
-
-  def __init__(self):
-    self.members = {}
-    self.methods = {}
-
-  def addMember(self):
-    pass
-
-  def addMethod(self):
-    pass
-
-class SelectFrom(object):
-
-  def __init__(self):
-    pass
-
-class SelectConcat(object):
-
-  def __init__(self):
-    pass

@@ -82,9 +82,6 @@ NAMED_RE = '\{(?:%s)\}' % gr.NAME_RE
 
 SYMBOLS_RE = '\(|\)|\[|\]|\{|\}|\=|\;|\*|</|/>|<|>'
 
-QUANT_QUEST_RE = '\([^()]+\)\?'
-QUANT_STAR_RE = '\([^()]+\)\*'
-QUANT_PLUS_RE = '\([^()]+\)\+'
 QUANT_CURLY_RE = '\([^()]+\)\{[\d,]+\}'
 
 class GrammarParser(object):
@@ -104,15 +101,26 @@ class GrammarParser(object):
     self.named_re = re.compile(NAMED_RE)
 
     # quant for detect quantifier and extract data
-    self.quant_quest_re = re.compile(QUANT_QUEST_RE)
-    self.quant_star_re = re.compile(QUANT_STAR_RE)
-    self.quant_plus_re = re.compile(QUANT_PLUS_RE)
-    self.quant_curly_re = re.compile(QUANT_CURLY_RE)
+    self.quant_quest_re = re.compile('\([^()]+\)\?')
+    self.quant_star_re = re.compile('\([^()]+\)\*')
+    self.quant_plus_re = re.compile('\([^()]+\)\+')
+    self.quant_curly_re = re.compile('\([^()]+\)\{[\d,]+\}')
+
+    # 
     
     # parsed grammar map by name
     self.rules = {}
 
+    # map rules names and handles
+    self.handleMap = {}
+
     # self.tokens_re = re.compile(TOKENS_RE)
+
+  def compileRules(self):
+    pass
+
+  def checkGrammar(self):
+    pass
 
   def parseGrammar(self, grammar):
     # parse grammar rule

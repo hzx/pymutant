@@ -72,8 +72,8 @@ class LexerTest(unittest.TestCase):
               """
               tasker.App app = App();
               """,
-              ['tasker', '.', 'App', 'app', '=', 'App', '(', ')', ';'],
-              ['name', '.', 'name', 'name', '=', 'name', '(', ')', ';'],
+              ['tasker.App', 'app', '=', 'App', '(', ')', ';'],
+              ['name', 'name', '=', 'name', '(', ')', ';'],
               ],
           # Select from
           [
@@ -81,9 +81,9 @@ class LexerTest(unittest.TestCase):
               var openMessages = select from messages where status is TaskStatus.OPEN;
               """,
               ['var', 'openMessages', '=', 'select', 'from', 'messages',
-                  'where', 'status', 'is', 'TaskStatus', '.', 'OPEN', ';'],
+                  'where', 'status', 'is', 'TaskStatus.OPEN', ';'],
               ['var', 'name', '=', 'select', 'from', 'name', 'where', 'name',
-                  'is', 'name', '.', 'name', ';'],
+                  'is', 'name', ';'],
               ],
           # Select concat
           [

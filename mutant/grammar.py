@@ -2,16 +2,16 @@
 
 SYMBOL_TOKENS = [
     '(', ')', '{', '}', '[', ']',
-    ':=', '+=', '-=', '*=', '/=', '>=', '<=',
+    ':=', '+=', '-=', '*=', '/=', '>=', '<=', '==', '!=',
     '</', '/>',
     '.', ',', ';', ':', '"', "'", '#',
-    '^', '=', '+', '-', '*', '/', '^', '\\', '!', '%', '?', '>', '<',
+    '^', '=', '+', '-', '*', '/', '\\', '!', '%', '?', '>', '<',
     # '~',
     ]
 
 SYSTEM_TOKENS = [
     'define', 'import', 'extern', 'return', 'as',
-    'var', 'bool', 'int', 'float', 'string', 'tag', 'event',
+    'void', 'var', 'bool', 'int', 'float', 'string', 'tag', 'event',
     'true', 'false', 'return', 'none',
     'static', 'interface', 'class', 'struct', 'enum', 'optional', 'extends',
     'implements', 'this',
@@ -33,7 +33,7 @@ ALPHA_RE = '[\ a-zA-Z0-9_\(\)\{\}\[\]\.\,\;\:\'\^\=\+\-\*/\\\?><#!%]'
 
 # Regexes
 
-NAME_RE = '[_a-zA-Z][_a-zA-Z0-9]*'
+NAME_RE = '(?:[_a-zA-Z][_a-zA-Z0-9]*[.]?)+'
 NAME_TYPE = 'name'
 LITINT_RE = '[0-9]+'
 LITINT_TYPE = 'litint'

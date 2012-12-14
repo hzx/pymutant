@@ -7,10 +7,7 @@ import glob
 class Loader(object):
   """
   Take input mutant file.
-  Create file table, line table, mark comments line
-  array of maps
-  { 'filename': '', 'lines': ['', ..], 'skiplines': [num, ..] }
-
+  Create source table, mark comments line
 
   Take input module name. Search *.mut files in module (folder).
   Into main.mut search module imports.
@@ -78,7 +75,7 @@ class Loader(object):
     sources = []
     # search and read files in folder
     for filename in glob.glob(folder + '/*.mut'):
-      with open(filename, 'r') as f: lines = f.readlines()
+      with open(filename, 'r') as f: lines = f.read().splitlines()
       skiplines = self.searchComments(lines)
       sources.append(Source(filename, lines, skiplines))
 
