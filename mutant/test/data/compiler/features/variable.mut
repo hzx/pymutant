@@ -5,6 +5,7 @@ string message;
 
 bool isChecked = false;
 
+/* var selectFrom = select from messages; */
 
 var isVarChecked = true;
 
@@ -13,7 +14,3 @@ var template = <div id='page'>
     <div id='content'></div>
     <div id='footer'></div>
   </div>;
-
-/*
-var selectFrom = select from messages;
-*/

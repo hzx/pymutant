@@ -91,11 +91,10 @@ class Loader(object):
       if len(result) > 0:
         multiComment = True
         skiplines.append(num)
-        continue
       if multiComment:
-        skiplines.append(num)
+        if not (num in skiplines): skiplines.append(num)
         # search multiline end
-        result = re.findall('^\s*\*/', line)
+        result = re.findall('\s*\*/$', line)
         if len(result) > 0: multiComment = False
         continue
       # search oneline comment
