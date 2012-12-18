@@ -51,6 +51,9 @@ class Lexer(object):
     source.tokens = tokens
 
   def detectWordType(self, word):
+    # check bool symbols
+    if word in gr.LITBOOL_LIST:
+      return gr.LITBOOL_TYPE
     # check system symbols
     if word in gr.SYMBOL_TOKENS:
       return word

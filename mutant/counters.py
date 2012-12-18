@@ -74,22 +74,32 @@ class TagBracketCounter(object):
 
   def __init__(self):
     self.resetCounter()
+    self.openBrackets = ['<', '</']
+    self.closeBrackets = ['>', '/>']
 
   def resetCounter(self):
     self.count = 0
 
   def calculateCounter(self, word):
-    if word == '<':
+    if word in self.openBrackets: 
       self.count = self.count + 1
-    if word in ['/>', '>']:
+    if word in self.closeBrackets:
       self.count = self.count - 1
-
-  def checkCounter(self, source):
-    if self.count != 0:
-      raise Exception('tag open/closed brackets error, source "%s"', source.filename)
 
   def check(self, leftIndex, rightIndex, source):
     self.resetCounter()
     for num, token in getTokensRange(leftIndex, rightIndex, source.tokens):
       self.calculateCounter(token.word)
-    self.checkCounter(source)
+    if self.count != 0:
+      raise Exception('tag open/closed brackets error, linenum "%d", source "%s"' % (source.tokens[leftIndex].linenum, source.filename))
+
+  def checkZero(self):
+    return self.count == 0
+
+  def findPair(self, leftIndex, rightIndex, source):
+    self.resetCounter()
+    for num, token in getTokensRange(leftIndex, rightIndex, source.tokens):
+      self.calculateCounter(token.word)
+      if token.word in self.closeBrackets and self.checkZero():
+        return num
+    return -1

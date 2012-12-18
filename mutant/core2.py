@@ -24,9 +24,13 @@ class VariableNode(Node):
     self.decltype = decltype
     self.name = name
     self.body = None
+    self.bodyReactive = False
 
   def setBody(self, node):
     self.body = node
+
+  def setBodyReactive(flag):
+    self.bodyReactive = flag
 
 class FunctionNode(Node):
 
@@ -36,6 +40,8 @@ class FunctionNode(Node):
     self.name = name
     self.params = {}
     self.bodyNodes = []
+    # used only for class constructor
+    self.inits = {}
 
   def addParameter(self, name, decltype):
     """
@@ -46,6 +52,10 @@ class FunctionNode(Node):
 
   def addBodyNode(self, node):
     self.bodyNodes.append(node)
+
+  def addInit(self, name, body):
+    self.inits[name] = body
+
 
 class EnumNode(Node):
     
@@ -93,19 +103,21 @@ class ClassNode(Node):
   def addFunction(self, function):
     self.functions[function.name] = function
 
-
 class SelectFromNode(Node):
 
-  def __init__(self, collection):
+  def __init__(self, collName):
     self.nodetype = 'select_from'
-    self.collection = collection
+    self.collName = collName
+    self.where = None
+    self.orderField = None
+    self.sortOrder = None
 
-  def addWhere(self, where):
+  def setWhere(self, where):
     self.where = where
 
-  def addOrder(self, order_field):
-    self.orderField = order_field
-
+  def setOrderField(self, orderField, sortOrder):
+    self.orderField = orderField
+    self.sortOrder = sortOrder
 
 class SelectConcatNode(Node):
   
@@ -113,9 +125,8 @@ class SelectConcatNode(Node):
     self.nodetype = 'select_concat'
     self.collections = []
 
-  def addCollections(self, collections):
-    self.collections = collections
-
+  def addCollection(self, collection):
+    self.collections.append(collection)
 
 class TagNode(Node):
 
@@ -130,3 +141,34 @@ class TagNode(Node):
 
   def addChild(self, tag):
     self.childs.append(tag)
+
+class ValueNode(Node):
+  """
+  Contains all values - literals, variables.
+  """
+
+  def __init__(self, value):
+    self.nodetype = 'value'
+    self.value = value
+
+class ReturnNode(Node):
+  """
+  Function return node
+  """
+
+  def __init__(self):
+    self.nodetype = 'return'
+    self.body = None
+
+  def setBody(self, node):
+    self.body = node
+
+class FunctionCallNode(Node):
+  
+  def __init__(self, name):
+    self.name = name
+    self.nodetype = 'functioncall'
+    self.params = []
+
+  def addParameter(self, node):
+    self.params.append(node)

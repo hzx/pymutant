@@ -17,7 +17,7 @@ rules = {
     'function_call': '<name>(name) (',
 
     'constructor': '({function_params})! {function_body}!',
-    'constructor_call': '<name>(name) {constructor_init}!',
+    'constructor_call': '<name>(name) ( ) {constructor_init}!',
 
     'enum_var': '<name>(name) = <value>(litint) ;',
     'struct_extends': 'extends <base_name>(name)',
@@ -27,32 +27,39 @@ rules = {
     'simple_type': 'bool|int|float|string|datetime|tag|event|name',
     'array_type': '{simple_type} [ ]',
     'type': '{array_type}|{simple_type}',
+    'array_body': '{match_array_body}!',
 
-    'select_from': 'select from {selectfrom_body}!',
+    'select_from': 'select from <name>(name) {selectfrom_body}!',
     'select_concat': 'select concat {selectconcat_body}!',
 
-    'expression_body': '{expression}!',
+    'orderby_param': '<name>(name) <order>(name)',
+
+    'expression': '{expression_body}!',
 
     # 'singletag': '< name {tagattrs}! />',
     # 'tag': '< name {tagattrs}! > {tag}! </ name >',
-    'tag': '{tag}!',
+    'tag': '{tag_body}!',
     'tagContent': '<name>(name) {tagattrs}!',
     'tagattrs': '',
 
     'if': 'if {if_body}!',
+    'map_item': '<name>(name) : {expression_body}!',
     }
 
+unaryFunctions = ['not']
+binaryFunctions = ['>', '<', '>=', '<=', '==', '!=', 'and', 'or', '*', '/', '%', '+', '-']
+functionNames = unaryFunctions + binaryFunctions
 functionsWeight = {
-    '>': 4,
-    '<': 4,
-    '>=': 4,
-    '<=': 4,
-    '==': 4,
-    '!=': 4,
-    'not': 4,
-    'and': 4,
-    'or': 4,
-    'function': 3,
+    'function': 4,
+    '>': 3,
+    '<': 3,
+    '>=': 3,
+    '<=': 3,
+    '==': 3,
+    '!=': 3,
+    'not': 3,
+    'and': 3,
+    'or': 3,
     '*': 2,
     '/': 2,
     '%': 2,
@@ -62,36 +69,19 @@ functionsWeight = {
 bracketWeight = 5
 
 # empty, grammarparser store here compiled rules (above)
-compiled = {
-    }
+compiled = {}
 
 # handled names
-handlers = {
-    # global
-    # other
-    'variable_body': None,
-    'operator': None,
-    'function_params': None,
-    'function_body': None,
-    'enum_body': None,
-    'struct_body': None,
-    'class_body': None,
-    'expression': None,
-    'selectfrom_body': None,
-    'selectconcat_body': None,
-    'tagattrs': None,
-    'tag': None,
-    'if_body': None,
-    }
+handlers = {}
 
 global_rules = ['define', 'variable', 'function', 'enum', 'struct', 'class']
 define_body_rules = ['function_declaration', 'type']
-variable_body_rules = ['constructor_call', 'function_call', 'select_from', 'select_concat', 'tag', 'expression_body']
+variable_body_rules = ['constructor_call', 'select_from', 'select_concat', 'tag', 'expression']
 function_body_rules = ['if', 'variable', 'function_return','expression']
 enum_body_rules = ['enum_var']
 struct_body_rules = ['variable']
 class_body_rules = ['constructor', 'variable', 'function']
-
+tag_child_rules = ['tag', 'expression']
 
 def getRule(name):
   return compiled[name]

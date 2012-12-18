@@ -1,0 +1,19 @@
+
+#var messages = ['a', 'b', 'c'];
+
+string message;
+
+bool isChecked = false;
+
+
+var isVarChecked = true;
+
+var template = <div id='page'>
+    <div id='header'></div>
+    <div id='content'></div>
+    <div id='footer'></div>
+  </div>;
+
+/*
+var selectFrom = select from messages;
+*/

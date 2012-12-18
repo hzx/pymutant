@@ -41,6 +41,8 @@ LITFLOAT_RE = '[0-9]+\.[0-9]+'
 LITFLOAT_TYPE = 'litfloat'
 LITSTRING_RE = "'[^']*'"
 LITSTRING_TYPE = 'litstring'
+LITBOOL_LIST = ['true', 'false']
+LITBOOL_TYPE = 'litbool'
 
 # Main grammar rules
 

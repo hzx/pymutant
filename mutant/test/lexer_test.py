@@ -38,7 +38,7 @@ class LexerTest(unittest.TestCase):
               bool flag = true;
               """,
               ['bool', 'flag', '=', 'true', ';'],
-              ['bool', 'name', '=', 'true', ';'],
+              ['bool', 'name', '=', 'litbool', ';'],
               ],
           [
               """

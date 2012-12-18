@@ -19,8 +19,8 @@ class CompilerTest(unittest.TestCase):
     """
     pass
 
-  def testDefine(self):
-    self.fail('not implemented')
+  # def testDefine(self):
+  #   self.fail('not implemented')
 
   def testVariable(self):
     module = self.compiler.compile(self.paths, 'variableint')
@@ -33,12 +33,21 @@ class CompilerTest(unittest.TestCase):
     self.assertEqual(var.nodetype, 'variable')
     self.assertEqual(matches.tokensToString(var.decltype), 'int')
     self.assertEqual(var.name, 'num')
-    self.assertIsNone(var.body)
+    self.assertIsNotNone(var.body)
+    self.assertEqual(var.body.nodetype, 'value')
+    self.assertEqual(var.body.value.word, '4')
 
   def testVariableBody(self):
     module = self.compiler.compile(self.paths, 'varbody')
     var = module.variables['num']
-    self.assertIsNotNone(var.body)
+    vb = var.body
+    self.assertIsNotNone(vb)
+    self.assertEqual(vb.nodetype, 'value')
+    self.assertEqual(vb.value.word, '4')
+    self.assertEqual(vb.value.wordtype, 'litint')
+
+  # def testVariableBodyFunctionParams(self):
+  #   self.fail('not implemented')
 
   def testFunction(self):
     module = self.compiler.compile(self.paths, 'emptyfunction')
@@ -65,7 +74,15 @@ class CompilerTest(unittest.TestCase):
     self.assertEqual(len(func.params), 2)
 
   def testFunctionBody(self):
-    self.fail('not implemented')
+    module = self.compiler.compile(self.paths, 'function')
+    func = module.functions['getModerated']
+    self.assertEqual(len(func.bodyNodes), 2)
+    vn = func.bodyNodes[0]
+    rn = func.bodyNodes[1]
+    self.assertEqual(vn.nodetype, 'variable')
+    self.assertIsNotNone(vn.body)
+    self.assertEqual(rn.nodetype, 'return')
+    self.assertIsNotNone(rn.body)
 
   def testEnum(self):
     module = self.compiler.compile(self.paths, 'emptyenum')
@@ -79,8 +96,8 @@ class CompilerTest(unittest.TestCase):
     self.assertEqual(en.name, 'KIND')
     self.assertEqual(len(en.members), 0)
 
-  def testEnumBody(self):
-    self.fail('not implemented')
+  # def testEnumBody(self):
+  #   self.fail('not implemented')
 
   def testStruct(self):
     module = self.compiler.compile(self.paths, 'emptystruct')
@@ -96,8 +113,8 @@ class CompilerTest(unittest.TestCase):
     self.assertEqual(len(st.variables), 0)
     self.assertEqual(len(st.functions), 0)
 
-  def testStructBody(self):
-    self.fail('not implemented')
+  # def testStructBody(self):
+  #   self.fail('not implemented')
 
   def testClass(self):
     module = self.compiler.compile(self.paths, 'emptyclass')
@@ -113,11 +130,33 @@ class CompilerTest(unittest.TestCase):
     self.assertEqual(len(cl.variables), 0)
     self.assertEqual(len(cl.functions), 0)
 
-  def testClassBase(self):
-    self.fail('not implemented')
+  # def testClassBase(self):
+  #   self.fail('not implemented')
 
-  def testClassConstructor(self):
-    self.fail('not implemented')
+  # def testClassConstructor(self):
+  #   self.fail('not implemented')
 
-  def testClassBody(self):
-    self.fail('not implemented')
+  # def testClassBody(self):
+  #   self.fail('not implemented')
+
+  def testFunctionReturnSingleTag(self):
+    module = self.compiler.compile(self.paths, 'singletag')
+    self.assertEqual(len(module.functions), 1)
+
+    func = module.functions['renderTemplate']
+    self.assertEqual(len(func.bodyNodes), 1)
+
+    rn = func.bodyNodes[0]
+    self.assertIsNotNone(rn.body)
+    self.assertEqual(rn.nodetype, 'return')
+
+    tn = rn.body
+    self.assertEqual(tn.nodetype, 'tag')
+    self.assertEqual(tn.name, 'img')
+
+  def testFeatures(self):
+    module = self.compiler.compile(self.paths, 'features')
+
+    raise Exception(len(module.variables))
+
+    varTemplate = module.variables['template']

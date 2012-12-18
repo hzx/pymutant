@@ -8,7 +8,7 @@ class GrammarParser(object):
 
   def __init__(self):
     # for first stage - split source by tokens
-    self.tokenfind_re = re.compile('\([^()]+\)(?:[?*+]|{[0-9,]+})|<[a-zA-Z_0-9]+>\([^()]+\)|(?:[^|\s]+[|]?)+|{[a-zA-Z_0-9]+}!?|[a-zA-Z_0-9]+|[()\[\]{};]')
+    self.tokenfind_re = re.compile('\([^()]+\)(?:[?*+]|{[0-9,]+})|<[a-zA-Z_0-9]+>\([^()]+\)|(?:[^|\s]+[|]?)+|{[a-zA-Z_0-9]+}!?|[a-zA-Z_0-9]+|[()\[\]{};\:]')
     # check and extract data regexes from token
     self.quant_check_re = re.compile('\([^()]+\)(?:[?*+])')
     self.quant_quest_extract_re = re.compile('\(([^()]+)\)\?')
@@ -21,7 +21,7 @@ class GrammarParser(object):
     self.param_extract_re = re.compile('\<([_a-zA-Z0-9][_a-zA-Z0-9]*)\>\(([^()]+)\)')
     self.handle_check_extract_re = re.compile('\{(%s)\}\!' % name_re)
     self.named_check_extract_re = re.compile('\{(%s)\}' % name_re)
-    self.value_check_re = re.compile('(%s)|([\(\)\[\]\{\}\<\>\=\;])|(\/\>)' % name_re)
+    self.value_check_re = re.compile('(%s)|([\(\)\[\]\{\}\<\>\=\:\;])|(\/\>)' % name_re)
     self.delim_extract_re = re.compile('\`([^`]+)\`')
 
   def compileGrammar(self):
