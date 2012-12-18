@@ -61,8 +61,6 @@ class Parser(object):
 
     self.addModuleNodes(nodes, self.module)
 
-    # TODO(dem) check source fully parsed
-
   def parseByRules(self, ruleNames, leftIndex, rightIndex, source):
     """
     Parse tokens by rules.
@@ -126,6 +124,7 @@ class Parser(object):
     grammar.setHandler('expression_body', self.matchExpression)
 
     grammar.setHandler('variable_body', self.matchVariableBody)
+    grammar.setHandler('match_array_body', self.matchArrayBody)
 
     grammar.setHandler('function_params', self.matchFunctionParams)
     grammar.setHandler('function_body', self.matchFunctionBody)
@@ -139,6 +138,8 @@ class Parser(object):
     grammar.setHandler('constructor_call', self.handleConstructorCall)
     grammar.setHandler('constructor_init', self.matchConstructorInit)
 
+    grammar.setHandler('array_body', self.createArrayBody)
+
     grammar.setHandler('select_from', self.createSelectFrom)
     grammar.setHandler('select_concat', self.createSelectConcat)
 
@@ -151,6 +152,7 @@ class Parser(object):
     grammar.setHandler('operator', self.handleOperator)
 
     # bind parsers
+    grammar.setHandler('parseArrayBody', self.parseArrayBody)
     grammar.setHandler('parseVariableBody', self.parseVariableBody)
     grammar.setHandler('parseFunctionParams', self.parseFunctionParams)
     grammar.setHandler('parseFunctionBody', self.parseFunctionBody)
@@ -251,6 +253,11 @@ class Parser(object):
     return cl
 
   # OTHER RULES
+
+  def createArrayBody(self, match, source):
+    nodes = self.nodesByHandlers(match.handlers, source)
+
+    return nodes[0]
 
   def createSelectFrom(self, match, source):
     name = match.params['name'][0].word
@@ -390,13 +397,66 @@ class Parser(object):
     """
     Find tag attributes and add it to tag.
     """
-    raise Exception('parseTagAttrs not implemented')
-
     leftCursor = leftIndex
-    rightCursor = rightIndex
-    while leftCursor <= rightCursor:
-      # leftCursor token must be name
+    # need for parsing current attribute body
+
+    while leftCursor <= rightIndex:
+      rightCursor = rightIndex
       nameToken = source.tokens[leftCursor]
+
+      # check attribute token count >= 3
+      indexDiff = rightIndex - leftCursor
+      if indexDiff < 2:
+        raise Exception('not enough tokens count "%d" for attribute, linenum "%d", source "%s"' % (indexDiff, nameToken.linenum, source.filename))
+
+      # check attribute name
+      if not (nameToken.wordtype in ['name', 'class']):
+        raise Exception('tag attribute must begin from name token, linenum "%d", source "%s"' % (nameToken.linenum, source.filename))
+      attrName = nameToken.word
+
+      # find = after name token
+      equalToken = source.tokens[leftCursor+1]
+
+      # find next attribute by 'name =', and after current name = value
+      nextAttrIndex = self.findNextTagAttr(leftCursor+2, rightIndex, source)
+      if nextAttrIndex >= 0: rightCursor = nextAttrIndex - 1
+      # if rightCursor - (leftCursor+2) > 1:
+      attrBodyNode = self.parseTagAttrBody(leftCursor+2, rightCursor, source)
+      # add attribute to tag
+      tag.addAttribute(nameToken.word, attrBodyNode)
+
+      # shift cursor after current attribute end
+      leftCursor = rightCursor + 1
+
+  def findNextTagAttr(self, leftIndex, rightIndex, source):
+    """
+    Find 'name =' in tokens.
+    Return name index of tag attribute.
+    Return -1 if not found.
+    """
+    cursor = leftIndex
+    while cursor <= rightIndex:
+      if rightIndex - cursor < 2: return -1
+      if source.tokens[cursor].wordtype in ['name', 'class'] and source.tokens[cursor+1].wordtype == '=':
+        return cursor
+      cursor = cursor + 1
+    return -1
+
+  def parseTagAttrBody(self, leftIndex, rightIndex, source):
+    """
+    Create and return node by variable_body_rules.
+    """
+    nodes = self.parseByRules(grammar.variable_body_rules, leftIndex, rightIndex, source)
+
+    leftToken = source.tokens[leftIndex]
+
+    lenNodes = len(nodes)
+    if lenNodes == 1:
+      return nodes[0]
+    if lenNodes > 1:
+      raise Exception('tag attribute body must contain one node, lenNodes "%d", linenum "%d", source "%s"' % (lenNodes, leftToken.linenum, source.filename))
+
+    raise Exception('not rule found for attribute body, token "%s", linenum "%d", source "%s"' % (leftToken.word, leftToken.linenum, source.filename))
 
   def matchVariableBody(self, leftIndex, rightIndex, source):
     """
@@ -417,6 +477,30 @@ class Parser(object):
       return match
 
     return None
+
+  def matchArrayBody(self, leftIndex, rightIndex, source):
+    """
+    Return match to [ and ] and check ;.
+    """
+    rightCursor = rightIndex
+    rightMatch = rightIndex
+
+    semicolonIndex = findWordIndex(';', leftIndex, rightIndex, source.tokens)
+    if semicolonIndex >= 0:
+      rightCursor = semicolonIndex-1
+      rightMatch = semicolonIndex
+
+    leftToken = source.tokens[leftIndex]
+    rightToken = source.tokens[rightCursor]
+
+    if leftToken.word == '[' and rightToken.word == ']':
+      match = Match(leftIndex, rightMatch)
+      if (rightCursor) - (leftIndex) > 1:
+        match.handlers['parseArrayBody'] = Match(leftIndex+1, rightCursor-1)
+      return match
+
+    return None
+
 
   def matchFunctionParams(self, leftIndex, rightIndex, source):
     if source.tokens[leftIndex].word == '(':
@@ -615,6 +699,39 @@ class Parser(object):
     nodes = self.parseByRules(grammar.variable_body_rules, leftIndex, rightIndex, source)
     return nodes
 
+  def parseArrayBody(self, leftIndex, rightIndex, source):
+    """
+    Create core.ArrayBodyNode create by variable_body_rules.
+    """
+    # raise Exception('parseArrayBody not implemented')
+
+    leftCursor = leftIndex
+    arrayBody = core.ArrayBodyNode()
+    while leftCursor <= rightIndex:
+      # find ,
+      commaIndex = findWordIndex(',', leftCursor, rightIndex, source.tokens)
+      rightCursor = rightIndex
+      endCursor = rightIndex
+      if commaIndex >= 0:
+        endCursor = commaIndex
+        rightCursor = commaIndex - 1
+
+      # DEBUG
+      # raise Exception('leftCursor "%d", rightCursor "%d", tokens "%s"' % (leftCursor, rightCursor, tokensToString(source.tokens[leftCursor:rightCursor+1])))
+
+      nodes = self.parseByRules(grammar.variable_body_rules, leftCursor, rightCursor, source)
+
+      # check nodes and add item
+      lenNodes = len(nodes)
+      if lenNodes == 1:
+        arrayBody.addItem(nodes[0])
+      if lenNodes > 1:
+        raise Exception('array item must have one or zero body node, linenum "%d", source "%s"' % (source.tokens[leftIndex].linenum, source.filename))
+
+      # shift cursor after , or after rightIndex
+      leftCursor = endCursor + 1
+    return arrayBody
+
   def parseVariableBody(self, var, leftIndex, rightIndex, source):
     # search = or :=
     cursorLeft = leftIndex
@@ -628,7 +745,8 @@ class Parser(object):
     # create nodes by rules
     nodes = self.parseByRules(grammar.variable_body_rules, cursorLeft, rightIndex, source)
 
-    if len(nodes) > 1: raise Exception('parse error: variable body must have one or zero body node')
+    if len(nodes) > 1:
+      raise Exception('parse error: variable body must have one or zero body node, linenum "%d", source "%s"' % (source.tokens[leftIndex].linenum, source.filename))
 
     if len(nodes) == 1:
       var.setBody(nodes[0])
@@ -780,6 +898,7 @@ class Parser(object):
         # order = openBracket nameIndex ... closeBracket
         nameIndex = openBracket+1
         nameToken = source.tokens[nameIndex]
+
         # nameToken.wordtype must be name
         if nameToken.wordtype != 'name':
           raise Exception('not found tag name, linenum "%d", source "%s"' % (nameToken.linenum, source.filename))
@@ -791,7 +910,7 @@ class Parser(object):
         # check if we have open-close tag
         if source.tokens[closeBracket].word == '>':
           # find close tag
-          closeTag = self.findCloseTag(nameToken.name, closeBracket+1, rightCursor)
+          closeTag = self.findCloseTag(nameToken.word, closeBracket+1, rightCursor, source)
           # check closeMatch
           if closeTag == None:
             raise Exception('not found close tag, linenum "%d", source "%s"' % (source.tokens[closeBracket].linenum, source.filename))

@@ -157,6 +157,42 @@ class CompilerTest(unittest.TestCase):
   def testFeatures(self):
     module = self.compiler.compile(self.paths, 'features')
 
-    raise Exception(len(module.variables))
+    # test variables
 
-    varTemplate = module.variables['template']
+    varTemplate = module.variables.get('template', None)
+    self.assertIsNotNone(varTemplate)
+    self.assertEqual(varTemplate.name, 'template')
+
+    varTemplateTag = varTemplate.body
+    self.assertIsNotNone(varTemplateTag)
+
+    self.assertEqual(varTemplateTag.nodetype, 'tag')
+    self.assertEqual(len(varTemplateTag.childs), 3)
+    self.assertEqual(len(varTemplateTag.attributes), 1)
+
+    varTemplateId = varTemplateTag.attributes.get('id', None)
+    self.assertIsNotNone(varTemplateId)
+    self.assertEqual(varTemplateId.nodetype, 'value')
+
+    arrayChildAttr = varTemplateTag.childs[1]
+    self.assertIsNotNone(arrayChildAttr)
+    self.assertEqual(len(arrayChildAttr.attributes), 2)
+
+    classAttr = arrayChildAttr.attributes.get('class', None)
+    self.assertIsNotNone(classAttr)
+    self.assertEqual(classAttr.nodetype, 'array_body')
+    self.assertEqual(len(classAttr.items), 2)
+    self.assertEqual(classAttr.items[0].nodetype, 'value')
+    self.assertEqual(classAttr.items[0].value.wordtype, 'litstring')
+    self.assertEqual(classAttr.items[0].value.word, "'common-content'")
+    self.assertEqual(classAttr.items[1].nodetype, 'value')
+    self.assertEqual(classAttr.items[1].value.wordtype, 'litstring')
+    self.assertEqual(classAttr.items[1].value.word, "'main-content'")
+
+    # test functions
+
+    # test enums
+
+    # test structs
+
+    # test classes

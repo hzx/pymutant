@@ -142,6 +142,8 @@ class TagNode(Node):
   def addChild(self, tag):
     self.childs.append(tag)
 
+# for calculations
+
 class ValueNode(Node):
   """
   Contains all values - literals, variables.
@@ -150,6 +152,18 @@ class ValueNode(Node):
   def __init__(self, value):
     self.nodetype = 'value'
     self.value = value
+
+class ArrayBodyNode(Node):
+  """
+  Contains array body ['item1', 'item2']
+  """
+
+  def __init__(self):
+    self.nodetype = 'array_body'
+    self.items = []
+
+  def addItem(self, node):
+    self.items.append(node)
 
 class ReturnNode(Node):
   """
