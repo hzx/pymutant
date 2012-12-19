@@ -16,8 +16,11 @@ rules = {
     'function_return': 'return ({operator}!)?',
     'function_call': '<name>(name) (',
 
-    'constructor': '({function_params})! {function_body}!',
+    # 'constructor': '({function_params})! {function_body}!',
+    'constructor': '( ) {function_body}!',
     'constructor_call': '<name>(name) ( ) {constructor_init}!',
+
+    'variable_assign': '{match_variable_assign}!',
 
     'enum_var': '<name>(name) = <value>(litint) ;',
     'struct_extends': 'extends <base_name>(name)',
@@ -78,7 +81,7 @@ handlers = {}
 global_rules = ['define', 'variable', 'function', 'enum', 'struct', 'class']
 define_body_rules = ['function_declaration', 'type']
 variable_body_rules = ['constructor_call', 'select_from', 'select_concat', 'tag', 'array_body', 'expression']
-function_body_rules = ['if', 'variable', 'function_return','expression']
+function_body_rules = ['if', 'variable', 'variable_assign', 'function_return','expression']
 enum_body_rules = ['enum_var']
 struct_body_rules = ['variable']
 class_body_rules = ['constructor', 'variable', 'function']

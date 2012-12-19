@@ -29,8 +29,8 @@ class VariableNode(Node):
   def setBody(self, node):
     self.body = node
 
-  def setBodyReactive(flag):
-    self.bodyReactive = flag
+  def setBodyReactive(isReactive):
+    self.bodyReactive = isReactive
 
 class FunctionNode(Node):
 
@@ -147,11 +147,20 @@ class TagNode(Node):
 class ValueNode(Node):
   """
   Contains all values - literals, variables.
+  This must looks like VariableNode, because this another representation.
   """
 
   def __init__(self, value):
     self.nodetype = 'value'
     self.value = value
+    self.body = None
+    self.bodyReactive = False
+
+  def setBody(self, node):
+    self.body = node
+
+  def setBodyReactive(isReactive):
+    self.bodyReactive = isReactive
 
 class ArrayBodyNode(Node):
   """

@@ -196,3 +196,9 @@ class CompilerTest(unittest.TestCase):
     # test structs
 
     # test classes
+
+    classCountManager = module.classes.get('CountManager', None)
+    self.assertIsNotNone(classCountManager)
+
+    self.assertIsNotNone(classCountManager.constructor)
+    self.assertEqual(classCountManager.name, 'CountManager')

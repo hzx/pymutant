@@ -31,20 +31,30 @@ class Parser(object):
     for source in module.sources:
       self.parseSource(source)
 
-  def addModuleNodes(self, nodes, module):
+  def addModuleNodes(self, nodes, module, source):
     for node in nodes:
       func = self.moduleNodeMap[node.nodetype]
-      func(module, node)
+      func(module, source, node)
 
-  def addModuleVariable(self, module, var):
+  def addModuleVariable(self, module, source, var):
+    if var.name in module.variables:
+      raise Exception('Module variable redefinition, variable name "%s", source "%s"' % (var.name, source.filename))
     module.variables[var.name] = var
-  def addModuleFunction(self, module, func):
+  def addModuleFunction(self, module, source, func):
+    if func.name in module.functions:
+      raise Exception('Module function redefinition, function name "%s", source "%s"' % (func.name, source.filename))
     module.functions[func.name] = func
-  def addModuleEnum(self, module, en):
+  def addModuleEnum(self, module, source, en):
+    if en.name in module.enums:
+      raise Exception('Module enum redefinition, enum name "%s", source "%s"' % (en.name, source.filename))
     module.enums[en.name] = en
-  def addModuleStruct(self, module, st):
+  def addModuleStruct(self, module, source, st):
+    if st.name in module.structs:
+      raise Exception('Module struct redefinition, struct name "%s", source "%s"' % (st.name, source.filename))
     module.structs[st.name] = st
-  def addModuleClass(self, module, cl):
+  def addModuleClass(self, module, source, cl):
+    if cl.name in module.classes:
+      raise Exception('Module class redefinition, class name "%s", source "%s"' % (cl.name, source.filename))
     module.classes[cl.name] = cl
 
   def parseSource(self, source):
@@ -59,7 +69,7 @@ class Parser(object):
     # parse with global grammar rules
     nodes = self.parseByRules(grammar.global_rules, leftIndex, rightIndex, source)
 
-    self.addModuleNodes(nodes, self.module)
+    self.addModuleNodes(nodes, self.module, source)
 
   def parseByRules(self, ruleNames, leftIndex, rightIndex, source):
     """
@@ -87,7 +97,8 @@ class Parser(object):
           break
       # check if all tokens parsed
       if not ruleFound:
-        raise Exception('No rule found in "%s" source' % (source.filename))
+        tokensString = tokensToString(source.tokens[leftIndex:rightIndex+1])
+        raise Exception('No rule found for parse, source "%s", tokens "%s"' % (source.filename, tokensString))
     return nodes
 
   def parseByRulesMulti(self, ruleNames, leftIndex, rightIndex, source):
@@ -134,9 +145,13 @@ class Parser(object):
 
     grammar.setHandler('struct_body', self.handleStructBody)
 
-    grammar.setHandler('class_body', self.handleClassBody)
-    grammar.setHandler('constructor_call', self.handleConstructorCall)
+    grammar.setHandler('class_body', self.matchClassBody)
+    grammar.setHandler('constructor', self.createConstructor)
+    grammar.setHandler('constructor_call', self.createConstructorCall)
     grammar.setHandler('constructor_init', self.matchConstructorInit)
+
+    grammar.setHandler('variable_assign', self.createVariableAssign)
+    grammar.setHandler('match_variable_assign', self.matchVariableAssign)
 
     grammar.setHandler('array_body', self.createArrayBody)
 
@@ -173,7 +188,6 @@ class Parser(object):
     nodes = []
     for handlerName, handlerMatch in handlers.items():
       handler = grammar.getHandler(handlerName)
-      # TODO(dem) bug it return nodes instead node
       node = handler(handlerMatch.leftIndex, handlerMatch.rightIndex, source)
       nodes.append(node)
     return nodes
@@ -552,7 +566,10 @@ class Parser(object):
       return match
     return None
 
-  def handleClassBody(self, leftIndex, rightIndex, source):
+  def matchClassBody(self, leftIndex, rightIndex, source):
+    """
+    Match class body, left token must be { and right token must be }
+    """
     if source.tokens[leftIndex].word == '{':
       bracketCounter = BracketCounter()
       match = bracketCounter.findPair(leftIndex, rightIndex, source)
@@ -560,7 +577,20 @@ class Parser(object):
       return match
     return None
 
-  def handleConstructorCall(self, match, source):
+  def createConstructor(self, match, source):
+    """
+    Create core.FunctionNode with decltype and name is None
+    """
+    name = None
+    decltype = None
+    con = core.FunctionNode(decltype, name)
+
+    self.runHandlers(con, match.handlers, source)
+
+    return con
+    
+
+  def createConstructorCall(self, match, source):
     """
     Create constructor (function) node.
     """
@@ -578,6 +608,39 @@ class Parser(object):
       match.handlers['parseConstructorInit'] = Match(leftIndex+1, match.rightIndex-1)
       return match
     return None
+
+  def createVariableAssign(self, match, source):
+    """
+    Create core.ValueNode.
+    """
+    nameToken = match.params['name']
+    value = core.ValueNode(nameToken)
+
+    self.runHandlers(value, match.handlers, source)
+
+    return value
+
+
+  def matchVariableAssign(self, left, right, source):
+    # check count tokens >=4 : name = value ;
+    if right - left < 3: return None
+
+    nameToken = source.tokens[left]
+    if nameToken.wordtype != 'name': return None
+
+    equalToken = source.tokens[left+1]
+    if not (equalToken.wordtype in ['=', ':=']): return None
+
+    # we have variable assign
+
+    semicolonIndex = findWordIndex(';', left, right, source.tokens)
+    if semicolonIndex < 0:
+      raise Exception('Not found ";", linenum "%d", source "%s"' % (nameToken.linenum, source.filename))
+
+    match = Match(left, semicolonIndex)
+    match.params['name'] = nameToken
+    match.handlers['parseVariableBody'] = Match(left+1, semicolonIndex-1)
+    return match
 
   def matchExpression(self, leftIndex, rightIndex, source):
     """
@@ -800,10 +863,19 @@ class Parser(object):
     for node in nodes:
       if node.nodetype == 'function':
         if node.name == None:
+          # check if constructor exists
+          if cl.constructor != None:
+            raise Exception('class constructor redefinition, class name "%s", source "%s"' % (cl.name, source.filename))
           cl.setConstructor(node)
         else:
+          # check if function exists
+          if node.name in cl.functions:
+            raise Exception('class function redefinition, class name "%s", function name "%s", source "%s"' % (cl.name, node.name, source.filename))
           cl.addFunction(node)
       if node.nodetype == 'variable':
+        # check if variable exists
+        if node.name in cl.variables:
+          raise Exception('class variable redefinition, class name "%s", variable name "%s", source "%s"' % (cl.name, node.name, source.filename))
         cl.addVariable(node)
 
   def parseConstructorInit(self, con, leftIndex, rightIndex, source):

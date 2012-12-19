@@ -1,0 +1,20 @@
+
+
+class CountManager {
+  () {
+  }
+
+  # members
+
+  int counter;
+
+  # methods
+
+  int getCounter() {
+    return this.counter;
+  }
+
+  void setCounter(int counter) {
+    this.counter = counter;
+  }
+}
