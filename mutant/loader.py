@@ -22,11 +22,11 @@ class Loader(object):
 
   def setPaths(self, paths):
     """
-    paths - paths where to find modules, paths divided by ,
+    paths - paths where to find modules, paths divided by :
     """
     abspaths = []
     # check folder paths exists and make it absolute
-    for path in re.split('\s*,\s*', paths):
+    for path in re.split('\s*:\s*', paths):
       if not os.path.exists(path):
         raise errors.PathNotFound(path)
       abspaths.append(os.path.abspath(path))

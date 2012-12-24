@@ -14,7 +14,7 @@ class LoaderTest(unittest.TestCase):
         os.path.join(DATA_PATH, 'patha'),
         os.path.join(DATA_PATH, 'pathb'),
         ]
-    self.loader.setPaths(','.join(paths))
+    self.loader.setPaths(':'.join(paths))
 
   def testConvertNameToPath(self):
     actual = self.loader.convertNameToPath('tasker.admin')
