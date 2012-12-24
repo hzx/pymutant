@@ -1,6 +1,6 @@
 import unittest
-from mutant.grammarparser2 import GrammarParser
-from mutant import grammar2 as grammar
+from mutant.grammarparser import GrammarParser
+from mutant import grammar
 from mutant import matches as mt
 
 

@@ -1,7 +1,6 @@
-from mutant.core import Formatter
 
 
-class PyFormatter(Formatter):
+class PyFormatter(object):
 
   def format(self, nodes):
     pass

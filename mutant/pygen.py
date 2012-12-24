@@ -1,7 +1,6 @@
-from mutant.core import Gen
 
 
-class PyGen(Gen):
+class PyGen(object):
 
   def __init__(self):
     pass

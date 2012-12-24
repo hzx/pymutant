@@ -1,7 +1,7 @@
 
 var messages = ['a', 'b', 'c'];
 
-string message;
+string message = messages[0];
 
 bool isChecked = false;
 

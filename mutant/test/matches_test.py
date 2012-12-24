@@ -1,6 +1,6 @@
 from mutant import matches
 from mutant import common
-from mutant import grammar2 as grammar
+from mutant import grammar
 import unittest
 
 

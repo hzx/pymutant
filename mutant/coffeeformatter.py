@@ -1,7 +1,6 @@
-from mutant.core import Formatter
 
 
-class CoffeeFormatter(Formatter):
+class CoffeeFormatter(object):
 
   def format(self, nodes):
     pass

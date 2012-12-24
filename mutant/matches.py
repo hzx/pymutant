@@ -1,6 +1,6 @@
 from abc import abstractmethod
 from mutant.common import getTokensRange
-from mutant import grammar2 as grammar
+from mutant import grammar
 
 
 def mergeMatches(leftIndex, rightIndex, matches):

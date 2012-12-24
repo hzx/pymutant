@@ -1,7 +1,7 @@
 import unittest
-from mutant.parser2 import Parser
+from mutant.parser import Parser
 from mutant.lexer import Lexer
-from mutant import core2 as core
+from mutant import core
 
 
 class ParserTest(unittest.TestCase):

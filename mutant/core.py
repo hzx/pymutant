@@ -1,126 +1,207 @@
-from mutant import grammar as gr
 from abc import abstractmethod
 
 
+class Param(object):
+
+  def __init__(self, decltype, name):
+    self.decltype = decltype
+    self.name = name
+
+
+"""
+Language semantic elements.
+"""
+
 class Node(object):
-  """Base class for all nodes."""
 
   def __init__(self):
     pass
-
-  # TODO(dem) deprecated
-  @abstractmethod
-  def convertNode(self, gen): pass
 
 class VariableNode(Node):
-  nodename = gr.VARIABLE_NAME
 
-  def __init__(self, name):
+  def __init__(self, decltype, name):
+    self.nodetype = 'variable'
+    self.decltype = decltype
     self.name = name
+    self.body = None
+    self.bodyReactive = False
 
-  def convertNode(self, gen):
-    return gen.createVar(self)
+  def setBody(self, node):
+    self.body = node
+
+  def setBodyReactive(isReactive):
+    self.bodyReactive = isReactive
 
 class FunctionNode(Node):
-  nodename = gr.FUNCTION_NAME
 
-  def __init__(self, name):
+  def __init__(self, decltype, name):
+    self.nodetype = 'function'
+    self.decltype = decltype
     self.name = name
+    self.params = {}
+    self.bodyNodes = []
+    # used only for class constructor
+    self.inits = {}
+
+  def addParameter(self, name, decltype):
+    """
+    params:
+      param - Param type
+    """
+    self.params[name] = decltype
+
+  def addBodyNode(self, node):
+    self.bodyNodes.append(node)
+
+  def addInit(self, name, body):
+    self.inits[name] = body
+
 
 class EnumNode(Node):
-  nodename = gr.ENUM_NAME
-
+    
   def __init__(self, name):
+    self.nodetype = 'enum'
     self.name = name
+    self.members = {}
 
-  def convertNode(self, gen):
-    return gen.createEnum(self)
+  def addMember(self, name, value):
+    self.members[name] = value
+
 
 class StructNode(Node):
-  nodename = gr.STRUCT_NAME
 
-  def __init__(self, name):
+  def __init__(self, name, baseName):
+    self.nodetype = 'struct'
     self.name = name
+    self.baseName = baseName
+    self.variables = {}
+    self.functions = {}
 
-  def convertNode(self, gen):
-    return gen.createStruct(self)
+  def addVariable(self, variable):
+    self.variables[variable.name] = variable
+
+  def addFunction(self, function):
+    self.functions[function.name] = function
+
 
 class ClassNode(Node):
-  nodename = gr.CLASS_NAME
 
-  def __init__(self, name):
+  def __init__(self, name, baseName):
+    self.nodetype = 'class'
     self.name = name
+    self.baseName = baseName
+    self.constructor = None
+    self.variables = {}
+    self.functions = {}
 
-  def convertNode(self, gen):
-    return gen.createClass(self)
+  def setConstructor(self, function):
+    self.constructor = function
 
-class IfNode(Node):
-  nodename = gr.IF_NAME
+  def addVariable(self, variable):
+    self.variables[variable.name] = variable
 
-  def __init__(self):
-    pass
+  def addFunction(self, function):
+    self.functions[function.name] = function
 
 class SelectFromNode(Node):
-  nodename = gr.SELECTFROM_NAME
 
-  def __init__(self, name):
-    self.name = name
+  def __init__(self, collName):
+    self.nodetype = 'select_from'
+    self.collName = collName
+    self.where = None
+    self.orderField = None
+    self.sortOrder = None
 
-  def convertNode(self, gen):
-    return gen.createSelectFrom(self)
+  def setWhere(self, where):
+    self.where = where
+
+  def setOrderField(self, orderField, sortOrder):
+    self.orderField = orderField
+    self.sortOrder = sortOrder
 
 class SelectConcatNode(Node):
-  nodename = gr.SELECTCONCAT_NAME
+  
+  def __init__(self):
+    self.nodetype = 'select_concat'
+    self.collections = []
 
-  def __init__(self, names):
-    self.names = names
-
-  def convertNode(self, gen):
-    return gen.createSelectConcat(self)
+  def addCollection(self, collection):
+    self.collections.append(collection)
 
 class TagNode(Node):
-  nodename = gr.TAG_NAME
 
   def __init__(self, name):
+    self.nodetype = 'tag'
     self.name = name
+    self.attributes = {}
+    self.childs = []
 
-  def convertNode(self, gen):
-    return gen.createTag(self)
+  def addAttribute(self, name, value):
+    self.attributes[name] = value
 
-class Gen(object):
-  """Base class for all generators."""
+  def addChild(self, tag):
+    self.childs.append(tag)
+
+# for calculations
+
+class ValueNode(Node):
+  """
+  Contains all values - literals, variables.
+  This must looks like VariableNode, because this another representation.
+  """
+
+  def __init__(self, value):
+    self.nodetype = 'value'
+    self.value = value
+    self.body = None
+    self.bodyReactive = False
+
+  def setBody(self, node):
+    self.body = node
+
+  def setBodyReactive(isReactive):
+    self.bodyReactive = isReactive
+
+class ArrayBodyNode(Node):
+  """
+  Contains array body ['item1', 'item2']
+  """
 
   def __init__(self):
-    pass
+    self.nodetype = 'array_body'
+    self.items = []
 
-  @abstractmethod
-  def convert(self, nodes): pass
+  def addItem(self, node):
+    self.items.append(node)
 
-  @abstractmethod
-  def createVar(self, node): pass
+class ArrayValueNode(Node):
+  """
+  Represents values[index] value expression.
+  """
 
-  @abstractmethod
-  def createFunction(self, node): pass
+  def __init__(self, value, index):
+    self.nodetype = 'array_value'
+    self.value = value
+    self.index = index
 
-  @abstractmethod
-  def createEnum(self, node): pass
+class ReturnNode(Node):
+  """
+  Function return node
+  """
 
-  @abstractmethod
-  def createStruct(self, node): pass
+  def __init__(self):
+    self.nodetype = 'return'
+    self.body = None
 
-  @abstractmethod
-  def createClass(self, node): pass
+  def setBody(self, node):
+    self.body = node
 
-  @abstractmethod
-  def createSelectFrom(self, node): pass
+class FunctionCallNode(Node):
+  
+  def __init__(self, name):
+    self.name = name
+    self.nodetype = 'functioncall'
+    self.params = []
 
-  @abstractmethod
-  def createSelectConcat(self, node): pass
-
-  @abstractmethod
-  def createTag(self, node): pass
-
-class Formatter(object):
-
-  @abstractmethod
-  def format(self, nodes): pass
+  def addParameter(self, node):
+    self.params.append(node)

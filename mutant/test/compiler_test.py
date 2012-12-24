@@ -1,5 +1,5 @@
 import unittest
-from mutant.compiler2 import Compiler
+from mutant.compiler import Compiler
 from mutant import common
 from mutant import matches
 import os.path

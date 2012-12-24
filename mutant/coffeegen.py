@@ -1,7 +1,6 @@
-from mutant.core import Gen
 
 
-class CoffeeGen(Gen):
+class CoffeeGen(object):
 
   def __init__(self):
     pass

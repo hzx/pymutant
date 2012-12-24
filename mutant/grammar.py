@@ -1,5 +1,4 @@
 
-
 SYMBOL_TOKENS = [
     '(', ')', '{', '}', '[', ']',
     ':=', '+=', '-=', '*=', '/=', '>=', '<=', '==', '!=',
@@ -44,232 +43,100 @@ LITSTRING_TYPE = 'litstring'
 LITBOOL_LIST = ['true', 'false']
 LITBOOL_TYPE = 'litbool'
 
-# Main grammar rules
 
-DEFINE_NAME = "define"
-DEFINE = "define name {expression}! ;"
+rules = {
+    'import': 'import <module>(name) as <alias>(name) ;',
+    'define': 'define <alias>(name) {define_body}!',
+    'variable': '<type>(var|{type}) <name>(name) {variable_body}!',
+    'function': '{function_type} ({function_name})? {function_params}! {function_body}!',
+    'enum': 'enum <name>(name) {enum_body}!',
+    'struct': 'struct <name>(name) ({struct_extends})? {struct_body}!',
+    'class': 'class <name>(name) ({class_extends})? {class_body}!',
 
-VARIABLE_NAME = "variable"
-VARIABLE = "var|{type} name (= {varbody}!)? ;"
+    'function_declaration': '{function_type} {function_params}! {function_body}!',
+    'function_type': '<type>(void|{type})',
+    'function_name': '<name>(name)',
+    'function_param': '<type>({type}) <name>(name)',
+    'function_return': 'return ({operator}!)?',
+    'function_call': '<name>(name) (',
 
-FUNCTION_NAME = "function"
-FUNCTION = "({type})? (name)? ( {params} ) { {funcbody}! }"
+    # 'constructor': '({function_params})! {function_body}!',
+    'constructor': '( ) {function_body}!',
+    'constructor_call': '<name>(name) ( ) {constructor_init}!',
 
-ENUM_NAME = "enum"
-ENUM = "enum name { {enumbody} }"
+    'variable_assign': '{match_variable_assign}!',
 
-STRUCT_NAME = "struct"
-STRUCT = "struct name { {structbody} }"
+    'enum_var': '<name>(name) = <value>(litint) ;',
+    'struct_extends': 'extends <base_name>(name)',
+    'class_extends': 'extends <base_name>(name)',
+    'order_by': '<order_field>(name)',
 
-CLASS_NAME = "class"
-CLASS = "class name (extends name)? { {classbody} }"
+    'simple_type': 'bool|int|float|string|datetime|tag|event|name',
+    'array_type': '{simple_type} [ ]',
+    'type': '{array_type}|{simple_type}',
 
-# Subgrammar rules
+    'array_value': '<value>(name) [ <index>(litint) ]',
+    'array_body': '{match_array_body}!',
 
-VARBODY_NAME = 'varbody'
-VARBODY = '{selectfrom}|{selectconcat}|{expression}!'
+    'select_from': 'select from <name>(name) {selectfrom_body}!',
+    'select_concat': 'select concat {selectconcat_body}!',
 
-ENUMBODY_NAME = 'enumbody'
-ENUMBODY = '(name = {litint} ;)*'
+    'orderby_param': '<name>(name) <order>(name)',
 
-STRUCTBODY_NAME = 'structbody'
-STRUCTBODY = '({type} name ;)*'
+    'expression': '{expression_body}!',
 
-CLASSBODY_NAME = 'classbody'
-CLASSBODY = '{constructor}|{variable}|{function}'
+    # 'singletag': '< name {tagattrs}! />',
+    # 'tag': '< name {tagattrs}! > {tag}! </ name >',
+    'tag': '{tag_body}!',
+    'tagContent': '<name>(name) {tagattrs}!',
+    'tagattrs': '',
 
-# Query
-
-SELECTFROM_NAME = "selectfrom"
-SELECTFROM = "select from name where {expression}! (order by {orderbyparams})?"
-
-SELECTCONCAT_NAME = "selectconcat"
-SELECTCONCAT = "select concat {concatparams}"
-
-ORDERBYPARAMS_NAME = 'orderbyparams'
-ORDERBYPARAMS = '(name `,`)+'
-
-# HTML
-
-TAG_NAME = "tag"
-TAG = "< name {tagattrs} > ({tag}|{singletag})* </ name >"
-
-SINGLETAG_NAME = "singletag"
-SINGLETAG = "< name {tagattrs} />"
-
-TAGATTRS_NAME = 'tagattrs'
-TAGATTRS = ''
-
-# Type
-
-NAMETYPE_NAME = 'nametype'
-NAMETYPE = '(name `.`)+'
-
-SIMPLETYPE_NAME = 'simpletype'
-SIMPLETYPE = 'bool|int|float|string|{nametype}|tag|event'
-
-ARRAYTYPE_NAME = 'arraytype'
-ARRAYTYPE = '{simpletype} [ ]'
-
-MAPTYPE_NAME = 'maptype'
-MAPTYPE = '{simpletype} : {simpletype} { }'
-
-SETTYPE_NAME = 'settype'
-SETTYPE = '{simpletype} { }'
-
-TYPE_NAME = "type"
-TYPE = "{arraytype}|{maptype}|{settype}|{simpletype}"
-
-# funcbody
-
-IF_NAME = 'if'
-IF = 'if {expression}! { {funcbody}! } ({else})?'
-
-ELSE_NAME = 'else'
-ELSE = 'else { {funcbody}! }'
-
-FUNCCALL_NAME = 'funccall'
-FUNCCALL = '{nametype} ( {callparams} )'
-
-PARAMS_NAME = "params"
-PARAMS = "({type} name `,`)*"
-
-CALLPARAMS_NAME = "callparams"
-CALLPARAMS = "({expression}! `,`)*"
-
-CONSTRUCTORCALL_NAME = 'constructorcall'
-CONSTRUCTORCALL = 'name ( ) { (name : {varbody} `,`)* } ;'
-
-# CALLFUNC_NAME = "callfunc"
-# CALLFUNC = "name ( {callparams} )"
-# 
-# CALLOBJFUNC_NAME = "callobjfunc"
-# CALLOBJFUNC = "name.name ( {callparams} )"
-# 
-# MULT_NAME = 'mult'
-# MULT = '{expression} * {expression}'
-# 
-# MULTASSIGN_NAME = 'multassign'
-# MULTASSIGN = 'name *= {expression}'
-# 
-# DIV_NAME = 'div'
-# DIV = '{expression} / {expression}'
-# 
-# DIVASSIGN_NAME = 'divassign'
-# DIVASSIGN = 'name /= {expression}'
-# 
-# ADD_NAME = 'add'
-# ADD = '{expression} + {expression}'
-# 
-# ADDASSIGN_NAME = 'addassign'
-# ADDASSIGN = 'name += {expression}'
-# 
-# SUB_NAME = 'sub'
-# SUB = '{expression} - {expression}'
-# 
-# SUBASSIGN_NAME = 'subassign'
-# SUBASSIGN = 'name -= {expression}'
-# 
-# GREATER_NAME = 'greater'
-# GREATER = '{expression} > {expression}'
-# 
-# LESS_NAME = 'less'
-# LESS = '{expression} < {expression}'
-# 
-# GREATEREQUAL_NAME = 'greaterequal'
-# GREATEREQUAL = '{expression} >= {expression}'
-# 
-# LESSEQUAL_NAME = 'lessequal'
-# LESSEQUAL = '{expression} <= {expression}'
-# 
-# EXPRESSION_NAME = "expression"
-# EXPRESSION = "name|{callfunc}|name.name|{callobjfunc}|{multiply}|{divide}"
-# 
-# VARASSIGN_NAME = "varassign"
-# VARASSIGN = "name = {expression} ;"
-# 
-# MAPBODY_NAME = 'mapbody'
-# MAPBODY = '{ name : {variable}|{strlit} }'
-# 
-# PARAMS_NAME = "params"
-# PARAMS = "({type} name `,`)*"
-# 
-# CALLPARAMS_NAME = "callparams"
-# CALLPARAMS = "({expression} `,`)*"
-# 
-# CONSTRUCTOR_NAME = "constructor"
-# CONSTRUCTOR = "( {params} ) {  }"
-# 
-# SELECTORDERBY_NAME = 'selectorderby'
-# SELECTORDERBY = 'order by (name `,`)*'
-# 
-# CONCATPARAMS_NAME = "concatparams"
-# CONCATPARAMS = "({expression} `,`){2,}"
-# 
-# TAGATTRS_NAME = "tagattrs"
-# TAGATTRS = "name = {mapbody}|{variable}|{strlit}|name"
-
-RULES = {
-    # main grammar rules
-    DEFINE_NAME: DEFINE,
-    VARIABLE_NAME: VARIABLE,
-    FUNCTION_NAME: FUNCTION,
-    ENUM_NAME: ENUM,
-    STRUCT_NAME: STRUCT,
-    CLASS_NAME: CLASS,
-    # subrules
-    ENUMBODY_NAME: ENUMBODY,
-    STRUCTBODY_NAME: STRUCTBODY,
-    CLASSBODY_NAME: CLASSBODY,
-    # query
-    SELECTFROM_NAME: SELECTFROM,
-    SELECTCONCAT_NAME: SELECTCONCAT,
-    ORDERBYPARAMS_NAME: ORDERBYPARAMS,
-    # HTML
-    TAG_NAME: TAG,
-    SINGLETAG_NAME: SINGLETAG,
-    # type
-    NAMETYPE_NAME: NAMETYPE,
-    SIMPLETYPE_NAME: SIMPLETYPE,
-    ARRAYTYPE_NAME: ARRAYTYPE,
-    MAPTYPE_NAME: MAPTYPE,
-    SETTYPE_NAME: SETTYPE,
-    TYPE_NAME: TYPE,
-    # funcbody
-    IF_NAME: IF,
-    ELSE_NAME: ELSE,
-    FUNCCALL_NAME: FUNCCALL,
-    PARAMS_NAME: PARAMS,
-    CALLPARAMS_NAME: CALLPARAMS,
-    CONSTRUCTORCALL_NAME: CONSTRUCTORCALL,
+    'if': 'if {if_body}!',
+    'map_item': '<name>(name) : {expression_body}!',
     }
 
-GLOBAL_RULES = [
-    DEFINE_NAME,
-    VARIABLE_NAME,
-    FUNCTION_NAME,
-    ENUM_NAME,
-    STRUCT_NAME,
-    CLASS_NAME,
-    ]
+unaryFunctions = ['not']
+binaryFunctions = ['>', '<', '>=', '<=', '==', '!=', 'and', 'or', '*', '/', '%', '+', '-']
+functionNames = unaryFunctions + binaryFunctions
+functionsWeight = {
+    'function': 4,
+    '>': 3,
+    '<': 3,
+    '>=': 3,
+    '<=': 3,
+    '==': 3,
+    '!=': 3,
+    'not': 3,
+    'and': 3,
+    'or': 3,
+    '*': 2,
+    '/': 2,
+    '%': 2,
+    '+': 1,
+    '-': 1,
+    }
+bracketWeight = 5
 
-EXPRESSION_RULES = [
-    SELECTFROM_NAME,
-    SELECTCONCAT_NAME,
-    SINGLETAG_NAME,
-    TAG_NAME,
-    ]
+# empty, grammarparser store here compiled rules (above)
+compiled = {}
 
-FUNCBODY_RULES = [
-    VARIABLE_NAME,
-    IF_NAME,
-    ]
+# handled names
+handlers = {}
 
-ENUMBODY_RULES = [
-    ]
+global_rules = ['define', 'variable', 'function', 'enum', 'struct', 'class']
+define_body_rules = ['function_declaration', 'type']
+variable_body_rules = ['constructor_call', 'select_from', 'select_concat', 'tag', 'array_body', 'array_value', 'expression']
+function_body_rules = ['if', 'variable', 'variable_assign', 'function_return','expression']
+enum_body_rules = ['enum_var']
+struct_body_rules = ['variable']
+class_body_rules = ['constructor', 'variable', 'function']
+tag_child_rules = ['tag', 'expression']
 
-STRUCTBODY_RULES = [
-    ]
+def getRule(name):
+  return compiled[name]
 
-CLASSBODY_RULES = [
-    ]
+def getHandler(name):
+  return handlers[name]
+
+def setHandler(name, handler):
+  handlers[name] = handler
