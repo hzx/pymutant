@@ -658,11 +658,29 @@ class Parser(object):
     return con
 
   def matchConstructorInit(self, leftIndex, rightIndex, source):
-    if source.tokens[leftIndex] == '{':
+    leftToken = source.tokens[leftIndex]
+    if leftToken.word == '{':
+      # search }
       bracketCounter = BracketCounter()
-      match = bracketCounter.findPair(leftIndex, rightIndex, source.tokens)
-      match.handlers['parseConstructorInit'] = Match(leftIndex+1, match.rightIndex-1)
+      closeIndex = bracketCounter.findPair(leftIndex, rightIndex, source.tokens)
+
+      # check it must exists
+      if closeIndex < 0:
+        raise Exception('matchConstructorInit: not found }, linenum "%d", source "%s"' % (leftToken.linenum, source.filename))
+
+      # match right end index
+      rightEnd = closeIndex
+
+      # search ;
+      semicolonIndex = closeIndex + 1
+      if semicolonIndex <= rightIndex and source.tokens[semicolonIndex].word == ';':
+        rightEnd = semicolonIndex
+
+      # compose match
+      match = Match(leftIndex, rightEnd)
+      match.handlers['parseConstructorInit'] = Match(leftIndex+1, closeIndex-1)
       return match
+
     return None
 
   def createVariableAssign(self, match, source):
@@ -869,8 +887,8 @@ class Parser(object):
 
       # find key, first token must be litstring
       leftToken = source.tokens[leftCursor]
-      if leftToken.wordtype != 'litstring':
-        raise Exception('Dict key in dict_body must be litstring type, actual "%s", linenum "%d", source "%s"' % (leftToken.wordtype, leftToken.linenum, source.filename))
+      if not (leftToken.wordtype in ['litint', 'litstring', 'name']):
+        raise Exception('Dict key in dict_body must be litint, litstring, name types, actual "%s", linenum "%d", source "%s"' % (leftToken.wordtype, leftToken.linenum, source.filename))
       keyName = leftToken.word
 
       # find ;
@@ -973,24 +991,9 @@ class Parser(object):
     """
     Check if see "," symbol.
     """
-    mapItemRule = grammar.getRule('map_item')
-
-    cursorLeft = leftIndex
-    cursorRight = rightIndex
-    while cursorLeft <= rightIndex:
-      commaIndex = findCommaIndex(leftIndex, rightIndex, source.tokens)
-      if commaIndex >= 0:
-        cursorRight = commaIndex - 1
-      match = matchNodes(mapItemRule, cursorLeft, cursorRight, source)
-      if match == None: raise Exception('constructor with parameter item not contains items, source %s' % source.filename) 
-      cursorLeft = match.rightIndex + 1
-      cursorRight = rightIndex
-      # add init item to constructor
-      name = match.params['name'][0].word
-      nodes = self.nodesByHandlers(match.handlers, source)
-      if (len(nodes)) != 1:
-        raise Exception('constructor with parameter item must contain only one body node')
-      con.addInit(name, nodes[0])
+    dictBody = self.parseDictBody(leftIndex, rightIndex, source)
+    for name, item in dictBody.items.items():
+      con.addInit(name, item)
 
   def parseSelectFromBody(self, selectFrom, leftIndex, rightIndex, source):
     """

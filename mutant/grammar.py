@@ -87,14 +87,11 @@ rules = {
 
     'expression': '{expression_body}!',
 
-    # 'singletag': '< name {tagattrs}! />',
-    # 'tag': '< name {tagattrs}! > {tag}! </ name >',
     'tag': '{tag_body}!',
     'tagContent': '<name>(name) {tagattrs}!',
     'tagattrs': '',
 
     'if': 'if {if_body}!',
-    'map_item': '<name>(name) : {expression_body}!',
     }
 
 unaryFunctions = ['not']

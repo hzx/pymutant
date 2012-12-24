@@ -7,6 +7,26 @@ bool isChecked = false;
 
 var selectFrom = select from messages where name == 'test'; 
 
+enum TokenKind {
+  LITBOOL = 1;
+  LITINT = 2;
+  LITFLOAT = 3;
+  LITSTRING = 4;
+  NAME = 5;
+  SYMBOL = 6;
+}
+
+class Token {
+  string word;
+  TokenKind kind;
+}
+
+Token[] tokens = [
+  Token() { word: 'bool', kind: TokenKind.LITBOOL },
+  Token() { word: 'isRendered', kind: TokenKind.NAME },
+  Token() { word: ';', kind: TokenKind.SYMBOL }
+  ];
+
 var isVarChecked = true;
 
 var style = { 'padding': '0 16px', 'position': 'absolute' };
