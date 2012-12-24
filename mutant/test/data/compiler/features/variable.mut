@@ -9,9 +9,10 @@ var selectFrom = select from messages where name == 'test';
 
 var isVarChecked = true;
 
+var style = { 'padding': '0 16px', 'position': 'absolute' };
+
 var template = <div id='page'>
     <div id='header'></div>
     <div id='content' class=['common-content', 'main-content']></div>
     <div id='footer'></div>
   </div>;
-

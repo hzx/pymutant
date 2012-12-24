@@ -174,6 +174,21 @@ class CompilerTest(unittest.TestCase):
     self.assertIsNotNone(varTemplate)
     self.assertEqual(varTemplate.name, 'template')
 
+    # dict body
+    varStyle = module.variables.get('style', None)
+    self.assertIsNotNone(varStyle)
+    self.assertEqual(varStyle.nodetype, 'variable')
+    self.assertIsNotNone(varStyle.body)
+    vsb = varStyle.body
+    self.assertEqual(vsb.nodetype, 'dict_body')
+    self.assertEqual(len(vsb.items), 2)
+    self.assertTrue("'padding'" in vsb.items)
+    self.assertEqual(vsb.items["'padding'"].value.word, "'0 16px'")
+    self.assertTrue("'position'" in vsb.items)
+    self.assertEqual(vsb.items["'position'"].value.word, "'absolute'")
+
+    # tag
+
     varTemplateTag = varTemplate.body
     self.assertIsNotNone(varTemplateTag)
 

@@ -154,7 +154,9 @@ class Parser(object):
 
     grammar.setHandler('array_value', self.createArrayValue)
     grammar.setHandler('array_body', self.createArrayBody)
+    grammar.setHandler('dict_body', self.createDictBody)
     grammar.setHandler('match_array_body', self.matchArrayBody)
+    grammar.setHandler('match_dict_body', self.matchDictBody)
 
     grammar.setHandler('select_from', self.createSelectFrom)
     grammar.setHandler('select_concat', self.createSelectConcat)
@@ -168,6 +170,7 @@ class Parser(object):
     grammar.setHandler('operator', self.handleOperator)
 
     # bind parsers
+    grammar.setHandler('parseDictBody', self.parseDictBody)
     grammar.setHandler('parseArrayBody', self.parseArrayBody)
     grammar.setHandler('parseVariableBody', self.parseVariableBody)
     grammar.setHandler('parseFunctionParams', self.parseFunctionParams)
@@ -275,6 +278,11 @@ class Parser(object):
     return core.ArrayValueNode(value, index)
 
   def createArrayBody(self, match, source):
+    nodes = self.nodesByHandlers(match.handlers, source)
+
+    return nodes[0]
+
+  def createDictBody(self, match, source):
     nodes = self.nodesByHandlers(match.handlers, source)
 
     return nodes[0]
@@ -503,24 +511,56 @@ class Parser(object):
     Return match to [ and ] and check ;.
     """
     rightCursor = rightIndex
-    rightMatch = rightIndex
-
-    semicolonIndex = findWordIndex(';', leftIndex, rightIndex, source.tokens)
-    if semicolonIndex >= 0:
-      rightCursor = semicolonIndex-1
-      rightMatch = semicolonIndex
-
+    rightEnd = rightIndex
     leftToken = source.tokens[leftIndex]
-    rightToken = source.tokens[rightCursor]
 
-    if leftToken.word == '[' and rightToken.word == ']':
-      match = Match(leftIndex, rightMatch)
-      if (rightCursor) - (leftIndex) > 1:
-        match.handlers['parseArrayBody'] = Match(leftIndex+1, rightCursor-1)
-      return match
+    if leftToken.word != '[':
+      return None
 
-    return None
+    # find ']'
+    bracketCounter = BracketCounter()
+    closeIndex = bracketCounter.findPair(leftIndex, rightIndex, source)
+    if closeIndex < 0:
+      raise Exception('not found "]" for array_body, linenum "%d", source "%s"' % (leftToken.linenum, source.filename))
 
+    # check ; after ]
+    nextIndex = closeIndex + 1
+    if nextIndex <= rightIndex and source.tokens[nextIndex].word == ';':
+      rightEnd = nextIndex
+
+    # compose match
+    match = Match(leftIndex, rightEnd)
+    if (closeIndex - leftIndex) > 1:
+      match.handlers['parseArrayBody'] = Match(leftIndex+1, closeIndex-1)
+    return match
+
+  def matchDictBody(self, leftIndex, rightIndex, source):
+    """
+    Return match to { and } and check ;
+    """
+    rightCursor = rightIndex
+    rightEnd = rightIndex
+    leftToken = source.tokens[leftIndex]
+
+    if leftToken.word != '{':
+      return None
+
+    # find '}'
+    bracketCounter = BracketCounter()
+    closeIndex = bracketCounter.findPair(leftIndex, rightIndex, source)
+    if closeIndex < 0:
+      raise Exception('not found "}" for dict_body, linenum "%d", source "%s"' % (leftToken.linenum, source.filename))
+
+    # check ; after }
+    nextIndex = closeIndex + 1
+    if nextIndex <= rightIndex and source.tokens[nextIndex].word == ';':
+      rightEnd = nextIndex
+
+    # compose match
+    match = Match(leftIndex, rightEnd)
+    if (closeIndex - leftIndex) > 1:
+      match.handlers['parseDictBody'] = Match(leftIndex+1, closeIndex-1)
+    return match
 
   def matchFunctionParams(self, leftIndex, rightIndex, source):
     if source.tokens[leftIndex].word == '(':
@@ -784,24 +824,18 @@ class Parser(object):
     """
     Create core.ArrayBodyNode create by variable_body_rules.
     """
-    # raise Exception('parseArrayBody not implemented')
-
     leftCursor = leftIndex
     arrayBody = core.ArrayBodyNode()
     while leftCursor <= rightIndex:
-      # find ,
-      commaIndex = findWordIndex(',', leftCursor, rightIndex, source.tokens)
       rightCursor = rightIndex
       endCursor = rightIndex
+      # find ,
+      commaIndex = findCommaIndex(leftCursor, rightIndex, source.tokens)
       if commaIndex >= 0:
         endCursor = commaIndex
         rightCursor = commaIndex - 1
 
-      # DEBUG
-      # raise Exception('leftCursor "%d", rightCursor "%d", tokens "%s"' % (leftCursor, rightCursor, tokensToString(source.tokens[leftCursor:rightCursor+1])))
-
       nodes = self.parseByRules(grammar.variable_body_rules, leftCursor, rightCursor, source)
-
       # check nodes and add item
       lenNodes = len(nodes)
       if lenNodes == 1:
@@ -812,6 +846,40 @@ class Parser(object):
       # shift cursor after , or after rightIndex
       leftCursor = endCursor + 1
     return arrayBody
+
+  def parseDictBody(self, leftIndex, rightIndex, source):
+    """
+    Create core.DictBodyNode, create by variable_body_rules.
+    """
+    leftCursor = leftIndex
+    dictBody = core.DictBodyNode()
+    while leftCursor <= rightIndex:
+      rightCursor = rightIndex
+      endCursor = rightIndex
+      # find ,
+      commaIndex = findCommaIndex(leftCursor, rightIndex, source.tokens)
+      if commaIndex >= 0:
+        rightCursor = commaIndex - 1
+        endCursor = commaIndex
+
+      # find key, first token must be litstring
+      leftToken = source.tokens[leftCursor]
+      if leftToken.wordtype != 'litstring':
+        raise Exception('Dict key in dict_body must be litstring type, actual "%s", linenum "%d", source "%s"' % (leftToken.wordtype, leftToken.linenum, source.filename))
+      keyName = leftToken.word
+
+      # find ;
+      nextIndex = leftCursor + 1
+      if nextIndex <= rightIndex and source.tokens[nextIndex].word == ':':
+        # add dict item
+        nodes = self.parseByRules(grammar.variable_body_rules, nextIndex+1, rightCursor, source)
+        dictBody.addItem(keyName, nodes[0])
+      else:
+        raise Exception('dict_body after key must follow ":", linenum "%d", source "%s"' % (leftToken.linenum, source.filename))
+
+      # shift cursors
+      leftCursor = endCursor + 1
+    return dictBody
 
   def parseVariableBody(self, var, leftIndex, rightIndex, source):
     # search = or :=

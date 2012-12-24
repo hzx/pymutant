@@ -73,10 +73,12 @@ rules = {
 
     'simple_type': 'bool|int|float|string|datetime|tag|event|name',
     'array_type': '{simple_type} [ ]',
+    'dict_type': '{ {simple_type} : {simple_type} }',
     'type': '{array_type}|{simple_type}',
 
     'array_value': '<value>(name) [ <index>(litint) ]',
     'array_body': '{match_array_body}!',
+    'dict_body': '{match_dict_body}!',
 
     'select_from': 'select from <name>(name) {selectfrom_body}!',
     'select_concat': 'select concat {selectconcat_body}!',
@@ -125,7 +127,7 @@ handlers = {}
 
 global_rules = ['define', 'variable', 'function', 'enum', 'struct', 'class']
 define_body_rules = ['function_declaration', 'type']
-variable_body_rules = ['constructor_call', 'select_from', 'select_concat', 'tag', 'array_body', 'array_value', 'expression']
+variable_body_rules = ['constructor_call', 'select_from', 'select_concat', 'tag', 'array_body', 'array_value', 'dict_body', 'expression']
 function_body_rules = ['if', 'variable', 'variable_assign', 'function_return','expression']
 enum_body_rules = ['enum_var']
 struct_body_rules = ['variable']

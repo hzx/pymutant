@@ -184,6 +184,18 @@ class ArrayValueNode(Node):
     self.value = value
     self.index = index
 
+class DictBodyNode(Node):
+  """
+  Contains dict body {'key1': expr, 'key2': exp}
+  """
+
+  def __init__(self):
+    self.nodetype = 'dict_body'
+    self.items = {}
+
+  def addItem(self, name, node):
+    self.items[name] = node
+
 class ReturnNode(Node):
   """
   Function return node
