@@ -1,0 +1,10 @@
+
+
+string getFunctionHash(int func) {
+  return 'hash';
+}
+
+void onOk(event e) {
+}
+
+var result = getFunctionHash(onOk);

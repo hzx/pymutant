@@ -525,16 +525,18 @@ class Parser(object):
   def matchFunctionParams(self, leftIndex, rightIndex, source):
     if source.tokens[leftIndex].word == '(':
       bracketCounter = BracketCounter()
-      match = bracketCounter.findPair(leftIndex, rightIndex, source)
-      match.handlers['parseFunctionParams'] = Match(leftIndex+1, match.rightIndex-1)
+      closeIndex = bracketCounter.findPair(leftIndex, rightIndex, source)
+      match = Match(leftIndex, closeIndex)
+      match.handlers['parseFunctionParams'] = Match(leftIndex+1, closeIndex-1)
       return match
     return None
 
   def matchFunctionBody(self, leftIndex, rightIndex, source):
     if source.tokens[leftIndex].word == '{':
       bracketCounter = BracketCounter()
-      match = bracketCounter.findPair(leftIndex, rightIndex, source)
-      match.handlers['parseFunctionBody'] = Match(match.leftIndex+1, match.rightIndex-1)
+      closeIndex = bracketCounter.findPair(leftIndex, rightIndex, source)
+      match = Match(leftIndex, closeIndex)
+      match.handlers['parseFunctionBody'] = Match(match.leftIndex+1, closeIndex-1)
       return match
     return None
 
@@ -559,16 +561,18 @@ class Parser(object):
   def handleEnumBody(self, leftIndex, rightIndex, source):
     if source.tokens[leftIndex].word == '{':
       bracketCounter = BracketCounter()
-      match = bracketCounter.findPair(leftIndex, rightIndex, source)
-      match.handlers['parseEnumBody'] = Match(match.leftIndex+1, match.rightIndex-1)
+      closeIndex = bracketCounter.findPair(leftIndex, rightIndex, source)
+      match = Match(leftIndex, closeIndex)
+      match.handlers['parseEnumBody'] = Match(match.leftIndex+1, closeIndex-1)
       return match
     return None
 
   def handleStructBody(self, leftIndex, rightIndex, source):
     if source.tokens[leftIndex].word == '{':
       bracketCounter = BracketCounter()
-      match = bracketCounter.findPair(leftIndex, rightIndex, source)
-      match.handlers['parseStructBody'] = Match(match.leftIndex+1, match.rightIndex-1)
+      closeIndex = bracketCounter.findPair(leftIndex, rightIndex, source)
+      match = Match(leftIndex, closeIndex)
+      match.handlers['parseStructBody'] = Match(match.leftIndex+1, closeIndex-1)
       return match
     return None
 
@@ -578,8 +582,9 @@ class Parser(object):
     """
     if source.tokens[leftIndex].word == '{':
       bracketCounter = BracketCounter()
-      match = bracketCounter.findPair(leftIndex, rightIndex, source)
-      match.handlers['parseClassBody'] = Match(match.leftIndex+1, match.rightIndex-1)
+      closeIndex = bracketCounter.findPair(leftIndex, rightIndex, source)
+      match = Match(leftIndex, closeIndex)
+      match.handlers['parseClassBody'] = Match(match.leftIndex+1, closeIndex-1)
       return match
     return None
 
@@ -733,7 +738,14 @@ class Parser(object):
       funcMatch = matchNodes(funcCallRule, cursor, match.rightIndex, source)
       if funcMatch:
         bracketCounter = BracketCounter()
-        closedIndex = bracketCounter.findPair(funcMatch.rightIndex, match.rightIndex)
+
+        # DEBUG
+        bracketToken = source.tokens[funcMatch.rightIndex]
+        if bracketToken.word!= '(':
+          raise Exception(funcMatch)
+          raise Exception('funcMatch ok mut funcMatch.rightIndex not "(", actual "%s", linenum "%d", leftIndex "%d", rightIndex "%d"' % (bracketToken.word, bracketToken.linenum, match.leftIndex, match.rightIndex))
+
+        closedIndex = bracketCounter.findPair(funcMatch.rightIndex, match.rightIndex, source)
         if closedIndex < 0:
           raise Exception('not found closed bracket ), cursor "%d", linenum "%s", source "%s"' % (cursor, token.linenum, source.filename))
         nodes.append({'kind': 'function', 'match': Match(funcMatch.leftIndex, closedIndex), 'weight': grammar.functionsWeight['function'] + bracketWeight})
@@ -1023,7 +1035,7 @@ class Parser(object):
     if kind == 'function':
       name = source.tokens[match.leftIndex].word
       createNode = core.FunctionCallNode(name)
-      # TODO(dem) parse params
+      self.parseCallParams(createNode, match.leftIndex, match.rightIndex, source)
     elif kind in grammar.unaryFunctions:
       createNode = core.FunctionCallNode(kind)
       # parse right indexes
@@ -1044,6 +1056,37 @@ class Parser(object):
       raise Exception('created node in expression is None, source "%s"' % source.filename)
 
     return createNode
+
+  def parseCallParams(self, fncall, leftIndex, rightIndex, source):
+    """
+    Every params parse as expression, divide by comma.
+    """
+    leftToken = source.tokens[leftIndex]
+    # check left bracket
+    if source.tokens[leftIndex+1].word != '(':
+      raise Exception('function call without open bracket, instead bracket we have "%s", linenum "%d", source "%s"' % (source.tokens[leftIndex+1].word, leftToken.linenum, source.filename))
+    # check right bracket
+    if source.tokens[rightIndex].word != ')':
+      raise Exception('function call without close bracket, linenum "%d", source "%s"' % (leftToken.linenum, source.filename))
+    # shift right from "name ("
+    leftCursor = leftIndex + 2
+    # shift left from ")"
+    rightEnd = rightIndex - 1
+    while leftCursor <= rightEnd:
+      rightCursor = rightEnd
+      # find ,
+      commaIndex = findCommaIndex(leftCursor, rightCursor, source.tokens)
+      if commaIndex >= 0:
+        rightCursor = commaIndex - 1
+      # parse expression and add it to params
+      param = self.createExpression(Match(leftCursor, rightCursor), source)
+      # add param to function call node
+      fncall.addParameter(param)
+      # move leftCursor
+      if commaIndex >= 0:
+        leftCursor = commaIndex + 1
+      else:
+        leftCursor = rightCursor + 1
 
   def findLighterIndex(self, left, right, nodes):
     """

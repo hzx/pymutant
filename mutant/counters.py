@@ -66,7 +66,7 @@ class BracketCounter(object):
       self._calculateCounters(token.word)
       # found close bracket
       if token.word == closeBracket and self._checkZero():
-        return Match(leftIndex, num)
+        return num
 
     return None
 

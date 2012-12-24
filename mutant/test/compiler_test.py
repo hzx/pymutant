@@ -46,8 +46,19 @@ class CompilerTest(unittest.TestCase):
     self.assertEqual(vb.value.word, '4')
     self.assertEqual(vb.value.wordtype, 'litint')
 
-  # def testVariableBodyFunctionParams(self):
-  #   self.fail('not implemented')
+  def testVariableBodyFunctionParams(self):
+    module = self.compiler.compile(self.paths, 'varbodyfuncparams')
+    var = module.variables.get('result', None)
+    self.assertIsNotNone(var)
+    self.assertEqual(var.nodetype, 'variable')
+    self.assertIsNotNone(var.body)
+    vb = var.body
+    self.assertEqual(vb.nodetype, 'functioncall')
+    self.assertEqual(vb.name, 'getFunctionHash')
+    self.assertEqual(len(vb.params), 1)
+    vbparam = vb.params[0]
+    self.assertEqual(vbparam.nodetype, 'value')
+    # self.assertEqual(vbparam.word, 'onOk')
 
   def testFunction(self):
     module = self.compiler.compile(self.paths, 'emptyfunction')

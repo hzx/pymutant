@@ -59,12 +59,18 @@ def tokensToArray(tokens):
 def matchNodes(nodes, leftIndex, rightIndex, source):
     matches = []
     cursor = leftIndex
+
+    nodeCount = 0
     for node in nodes:
+      nodeCount = nodeCount + 1
       match = node.match(cursor, rightIndex, source)
       if match:
-        if match.rightIndex >= 0: cursor = match.rightIndex + 1
+        if match.rightIndex >= 0:
+          cursor = match.rightIndex + 1
         matches.append(match)
-        if cursor > rightIndex: break
+        if cursor > rightIndex: 
+          if nodeCount < len(nodes): return None
+          break
       else:
         return None
 
