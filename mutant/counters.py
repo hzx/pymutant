@@ -1,6 +1,24 @@
 from mutant.matches import Match
 from mutant.common import getTokensRange
 
+def findCommaIndex(leftIndex, rightIndex, tokens):
+  """
+  Find "," symbol and check it not into function params.
+  """
+  cursor = leftIndex
+  bracketCounter = BracketCounter()
+  while cursor <= rightIndex:
+    # skip round brackets
+    if tokens[cursor].word in ['(', '[', '{']:
+      closedIndex = bracketCounter.findPair(cursor, rightIndex, tokens)
+      # if found brackets then move cursor after brackets
+      if closedIndex >= 0:
+        cursor = closedIndex + 1
+        continue
+    if tokens[cursor].word == ',':
+      return cursor
+    cursor = cursor + 1
+  return -1
 
 class BracketCounter(object):
 
@@ -53,22 +71,22 @@ class BracketCounter(object):
       self._calculateCounters(token.word)
     self._checkCounters()
 
-  def findPair(self, leftIndex, rightIndex, source):
+  def findPair(self, leftIndex, rightIndex, tokens):
     """
     tokens[leftIndex] must be opened bracket
     """
     self._resetCounters()
     # open bracket
-    openBracket = source.tokens[leftIndex].word
+    openBracket = tokens[leftIndex].word
     closeBracket = self._getCloseBracket(openBracket)
     # find closeBracket and check counters must be zero
-    for num, token in getTokensRange(leftIndex, rightIndex, source.tokens):
+    for num, token in getTokensRange(leftIndex, rightIndex, tokens):
       self._calculateCounters(token.word)
       # found close bracket
       if token.word == closeBracket and self._checkZero():
         return num
 
-    return None
+    return -1
 
 class TagBracketCounter(object):
 
@@ -96,9 +114,9 @@ class TagBracketCounter(object):
   def checkZero(self):
     return self.count == 0
 
-  def findPair(self, leftIndex, rightIndex, source):
+  def findPair(self, leftIndex, rightIndex, tokens):
     self.resetCounter()
-    for num, token in getTokensRange(leftIndex, rightIndex, source.tokens):
+    for num, token in getTokensRange(leftIndex, rightIndex, tokens):
       self.calculateCounter(token.word)
       if token.word in self.closeBrackets and self.checkZero():
         return num

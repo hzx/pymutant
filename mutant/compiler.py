@@ -20,6 +20,8 @@ class Compiler(object):
     # compile grammar rules
     self.grammarParser.compileGrammar()
 
+    self.compiledModules = {}
+
   def compile(self, srcPaths, moduleName):
     """
     Create mutant lang source code tree.
@@ -29,6 +31,10 @@ class Compiler(object):
     output:
       module - common.Module instance.
     """
+    # check if moduleName already compiled
+    if moduleName in self.compiledModules:
+      return self.compiledModules[moduleName]
+
     self.loader.setPaths(srcPaths)
 
     # loader, lexer and parser all change module object
@@ -36,11 +42,15 @@ class Compiler(object):
 
     # parse each module in lexer.modules cache
     for name, module in self.loader.modules.items():
+      if name in self.compiledModules:
+        continue
       self.lexer.parse(module)
       self.parser.parse(module)
 
-    for module in self.loader.modules:
+    # check and add to module to cache
+    for name, module in self.loader.modules.items():
       self.checker.check(module)
+      self.compiledModules[name] = module
 
     return mainModule
 

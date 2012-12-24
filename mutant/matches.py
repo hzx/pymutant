@@ -29,24 +29,6 @@ def findWordIndex(word, leftIndex, rightIndex, tokens):
       return num
   return -1
 
-def findCommaIndex(leftIndex, rightIndex, tokens):
-  """
-  Find "," symbol and check it not into function params.
-  """
-  cursor = leftIndex
-  while cursor <= rightIndex:
-    # skip round brackets
-    if tokens[cursor].word == '(':
-      closedIndex = findWordIndex(')', cursor+1, rightIndex, tokens)
-      # if found brackets then move cursor after brackets
-      if closedIndex >= 0:
-        cursor = closedIndex + 1
-        continue
-    if tokens[cursor].word == ',':
-      return cursor
-    cursor = cursor + 1
-  return -1
-
 def tokensToString(tokens):
   buf = []
   for token in tokens:

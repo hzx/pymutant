@@ -1,8 +1,8 @@
 from mutant import core as core
 from mutant import grammar
-from mutant.counters import BracketCounter, TagBracketCounter
+from mutant.counters import BracketCounter, TagBracketCounter, findCommaIndex
 from mutant.common import getTokensRange
-from mutant.matches import Match, mergeMatches, matchNodes, tokensToString, findWordIndex, findCommaIndex
+from mutant.matches import Match, mergeMatches, matchNodes, tokensToString, findWordIndex
 
 
 class Parser(object):
@@ -279,6 +279,10 @@ class Parser(object):
 
   def createArrayBody(self, match, source):
     nodes = self.nodesByHandlers(match.handlers, source)
+    
+    if len(nodes) == 0:
+      leftToken = source.tokens[match.leftIndex]
+      raise Exception('createArrayBody nodes == 0, begin token "%s", linenum "%d", source "%s"' % (leftToken.word, leftToken.linenum, source.filename))
 
     return nodes[0]
 
@@ -519,9 +523,10 @@ class Parser(object):
 
     # find ']'
     bracketCounter = BracketCounter()
-    closeIndex = bracketCounter.findPair(leftIndex, rightIndex, source)
+    closeIndex = bracketCounter.findPair(leftIndex, rightIndex, source.tokens)
     if closeIndex < 0:
-      raise Exception('not found "]" for array_body, linenum "%d", source "%s"' % (leftToken.linenum, source.filename))
+      rawTokens = tokensToString(source.tokens[leftIndex:rightIndex+1])
+      raise Exception('not found "]" for array_body, linenum "%d", source "%s", tokens "%s"' % (leftToken.linenum, source.filename, rawTokens))
 
     # check ; after ]
     nextIndex = closeIndex + 1
@@ -530,8 +535,8 @@ class Parser(object):
 
     # compose match
     match = Match(leftIndex, rightEnd)
-    if (closeIndex - leftIndex) > 1:
-      match.handlers['parseArrayBody'] = Match(leftIndex+1, closeIndex-1)
+    # if (closeIndex - leftIndex) > 1:
+    match.handlers['parseArrayBody'] = Match(leftIndex+1, closeIndex-1)
     return match
 
   def matchDictBody(self, leftIndex, rightIndex, source):
@@ -547,7 +552,7 @@ class Parser(object):
 
     # find '}'
     bracketCounter = BracketCounter()
-    closeIndex = bracketCounter.findPair(leftIndex, rightIndex, source)
+    closeIndex = bracketCounter.findPair(leftIndex, rightIndex, source.tokens)
     if closeIndex < 0:
       raise Exception('not found "}" for dict_body, linenum "%d", source "%s"' % (leftToken.linenum, source.filename))
 
@@ -558,14 +563,14 @@ class Parser(object):
 
     # compose match
     match = Match(leftIndex, rightEnd)
-    if (closeIndex - leftIndex) > 1:
-      match.handlers['parseDictBody'] = Match(leftIndex+1, closeIndex-1)
+    # if (closeIndex - leftIndex) > 1:
+    match.handlers['parseDictBody'] = Match(leftIndex+1, closeIndex-1)
     return match
 
   def matchFunctionParams(self, leftIndex, rightIndex, source):
     if source.tokens[leftIndex].word == '(':
       bracketCounter = BracketCounter()
-      closeIndex = bracketCounter.findPair(leftIndex, rightIndex, source)
+      closeIndex = bracketCounter.findPair(leftIndex, rightIndex, source.tokens)
       match = Match(leftIndex, closeIndex)
       match.handlers['parseFunctionParams'] = Match(leftIndex+1, closeIndex-1)
       return match
@@ -574,7 +579,7 @@ class Parser(object):
   def matchFunctionBody(self, leftIndex, rightIndex, source):
     if source.tokens[leftIndex].word == '{':
       bracketCounter = BracketCounter()
-      closeIndex = bracketCounter.findPair(leftIndex, rightIndex, source)
+      closeIndex = bracketCounter.findPair(leftIndex, rightIndex, source.tokens)
       match = Match(leftIndex, closeIndex)
       match.handlers['parseFunctionBody'] = Match(match.leftIndex+1, closeIndex-1)
       return match
@@ -601,7 +606,7 @@ class Parser(object):
   def handleEnumBody(self, leftIndex, rightIndex, source):
     if source.tokens[leftIndex].word == '{':
       bracketCounter = BracketCounter()
-      closeIndex = bracketCounter.findPair(leftIndex, rightIndex, source)
+      closeIndex = bracketCounter.findPair(leftIndex, rightIndex, source.tokens)
       match = Match(leftIndex, closeIndex)
       match.handlers['parseEnumBody'] = Match(match.leftIndex+1, closeIndex-1)
       return match
@@ -610,7 +615,7 @@ class Parser(object):
   def handleStructBody(self, leftIndex, rightIndex, source):
     if source.tokens[leftIndex].word == '{':
       bracketCounter = BracketCounter()
-      closeIndex = bracketCounter.findPair(leftIndex, rightIndex, source)
+      closeIndex = bracketCounter.findPair(leftIndex, rightIndex, source.tokens)
       match = Match(leftIndex, closeIndex)
       match.handlers['parseStructBody'] = Match(match.leftIndex+1, closeIndex-1)
       return match
@@ -622,7 +627,7 @@ class Parser(object):
     """
     if source.tokens[leftIndex].word == '{':
       bracketCounter = BracketCounter()
-      closeIndex = bracketCounter.findPair(leftIndex, rightIndex, source)
+      closeIndex = bracketCounter.findPair(leftIndex, rightIndex, source.tokens)
       match = Match(leftIndex, closeIndex)
       match.handlers['parseClassBody'] = Match(match.leftIndex+1, closeIndex-1)
       return match
@@ -655,7 +660,7 @@ class Parser(object):
   def matchConstructorInit(self, leftIndex, rightIndex, source):
     if source.tokens[leftIndex] == '{':
       bracketCounter = BracketCounter()
-      match = bracketCounter.findPair(leftIndex, rightIndex, source)
+      match = bracketCounter.findPair(leftIndex, rightIndex, source.tokens)
       match.handlers['parseConstructorInit'] = Match(leftIndex+1, match.rightIndex-1)
       return match
     return None
@@ -785,7 +790,7 @@ class Parser(object):
           raise Exception(funcMatch)
           raise Exception('funcMatch ok mut funcMatch.rightIndex not "(", actual "%s", linenum "%d", leftIndex "%d", rightIndex "%d"' % (bracketToken.word, bracketToken.linenum, match.leftIndex, match.rightIndex))
 
-        closedIndex = bracketCounter.findPair(funcMatch.rightIndex, match.rightIndex, source)
+        closedIndex = bracketCounter.findPair(funcMatch.rightIndex, match.rightIndex, source.tokens)
         if closedIndex < 0:
           raise Exception('not found closed bracket ), cursor "%d", linenum "%s", source "%s"' % (cursor, token.linenum, source.filename))
         nodes.append({'kind': 'function', 'match': Match(funcMatch.leftIndex, closedIndex), 'weight': grammar.functionsWeight['function'] + bracketWeight})
@@ -929,7 +934,7 @@ class Parser(object):
     cursor = leftIndex
     enumVarRule = grammar.getRule('enum_var')
     while cursor <= rightIndex:
-      match = matchNodes(enumVarRule)
+      match = matchNodes(enumVarRule, cursor, rightIndex, source)
       if match == None: break
       # add enum member
       name = match.params['name'][0].word
@@ -1052,7 +1057,7 @@ class Parser(object):
         if leftCursor < openBracket:
           nodes.append(self.createExpression(Match(leftCursor, openBracket-1), source))
         # find close bracket
-        closeBracket = bracketCounter.findPair(openBracket, rightCursor, source)
+        closeBracket = bracketCounter.findPair(openBracket, rightCursor, source.tokens)
         # order = openBracket nameIndex ... closeBracket
         nameIndex = openBracket+1
         nameToken = source.tokens[nameIndex]
