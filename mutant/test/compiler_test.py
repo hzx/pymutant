@@ -215,6 +215,27 @@ class CompilerTest(unittest.TestCase):
     self.assertEqual(classAttr.items[1].value.wordtype, 'litstring')
     self.assertEqual(classAttr.items[1].value.word, "'main-content'")
 
+    # select from
+    sf = module.variables.get('selectFrom', None)
+    self.assertIsNotNone(sf)
+    self.assertEqual(sf.nodetype, 'variable')
+    self.assertIsNotNone(sf.body)
+    self.assertEqual(sf.body.nodetype, 'select_from')
+
+    # select concat
+    sc = module.variables.get('selectConcat', None)
+    self.assertIsNotNone(sc)
+    self.assertEqual(sc.nodetype, 'variable')
+    self.assertIsNotNone(sc.body)
+    self.assertEqual(sc.body.nodetype, 'select_concat')
+
+    # delete from
+    df = module.variables.get('deleteFrom', None)
+    self.assertIsNotNone(df)
+    self.assertEqual(df.nodetype, 'variable')
+    self.assertIsNotNone(df.body)
+    self.assertEqual(df.body.nodetype, 'delete_from')
+
     # test functions
 
     # test enums

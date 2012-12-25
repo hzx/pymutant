@@ -160,9 +160,11 @@ class Parser(object):
 
     grammar.setHandler('select_from', self.createSelectFrom)
     grammar.setHandler('select_concat', self.createSelectConcat)
+    grammar.setHandler('delete_from', self.createDeleteFrom)
 
     grammar.setHandler('selectfrom_body', self.matchSelectFromBody)
     grammar.setHandler('selectconcat_body', self.matchSelectConcatBody)
+    grammar.setHandler('deletefrom_body', self.matchDeleteFromBody)
 
     grammar.setHandler('tag', self.createTag)
     grammar.setHandler('tag_body', self.matchTag)
@@ -182,6 +184,7 @@ class Parser(object):
     grammar.setHandler('parseConstructorInit', self.parseConstructorInit)
     grammar.setHandler('parseSelectFromBody', self.parseSelectFromBody)
     grammar.setHandler('parseSelectConcatBody', self.parseSelectConcatBody)
+    grammar.setHandler('parseDeleteFromBody', self.parseDeleteFromBody)
 
   def runHandlers(self, obj, handlers, source):
     for handlerName, handlerMatch in handlers.items():
@@ -312,10 +315,10 @@ class Parser(object):
       rightCursor = semicolonIndex - 1
       rightEnd = semicolonIndex
 
-    outMatch = Match(leftIndex, rightEnd)
-    outMatch.handlers['parseSelectFromBody'] = Match(leftIndex, rightCursor)
+    match = Match(leftIndex, rightEnd)
+    match.handlers['parseSelectFromBody'] = Match(leftIndex, rightCursor)
 
-    return outMatch
+    return match
 
   def createSelectConcat(self, match, source):
     """
@@ -327,19 +330,53 @@ class Parser(object):
 
     return selectConcat
 
-  def matchSelectConcatBody(self, leftIndex, rightIndex, source):
+  def matchSelectConcatBody(self, left, right, source):
     """
     Return match.
     """
-    semicolonIndex = findWordIndex(';', leftIndex, rightIndex, source)
-    if semicolonIndex < 0:
-      raise Exception('select from body: not found ; in source "%s"' % source.filename)
-    rightCursor = semicolonIndex - 1
+    match = Match(left, right)
+    match.handlers['parseSelectConcatBody'] = Match(left, right)
 
-    outMatch = Match(leftIndex, semicolonIndex)
-    outMatch.handlers['parseSelectConcatBody'] = Match(leftIndex, rightCursor)
+    return match
 
-    return outMatch
+  def createDeleteFrom(self, match, source):
+    """
+    Create core.DeleteFromNode.
+    """
+    name = match.params['name'][0].word
+    deleteFrom = core.DeleteFromNode(name)
+
+    self.runHandlers(deleteFrom, match.handlers, source)
+
+    return deleteFrom
+
+  def matchDeleteFromBody(self, left, right, source):
+    """
+    Return match. Search ;.
+    """
+    if source.tokens[left].word != 'where':
+      return None
+
+    match = Match(left, right)
+    match.handlers['parseDeleteFromBody'] = Match(left, right)
+
+    return match
+
+  def parseDeleteFromBody(self, deleteFrom, left, right, source):
+    """
+    Add where expression to deleteFrom node.
+    """
+    leftToken = source.tokens[left]
+    whereIndex = findWordIndex('where', left, right, source.tokens)
+
+    if whereIndex < 0:
+      raise Exception('delete from not found where keyword, linenum "%d", source "%s"' % (leftToken.linenum, source.filename))
+
+    if right - whereIndex < 1:
+      raise Exception('delete from where not found expression, linenum "%d", source "%s"' % (leftToken.linenum, source.filename))
+
+    expr = self.createExpression(Match(whereIndex+1, right), source)
+    deleteFrom.setWhere(expr)
 
   def createTag(self, match, source):
     """
@@ -919,6 +956,7 @@ class Parser(object):
     # search = or :=
     cursorLeft = leftIndex
     firstToken = source.tokens[leftIndex]
+
     if firstToken.word in ['=', ':=']:
       # set body reactive
       if firstToken.word == ':=':
@@ -1066,8 +1104,8 @@ class Parser(object):
       if byToken.word != 'by':
         raise Exception('select from order must follow by word, linenum "%d", source "%s"' % (byToken.linenum, source.filename))
 
-      orderbyParamRule = grammar.getRule('orderby_param')
-      match = matchNores(orderByParamRule, orderIndex+2, rightIndex, source)
+      orderByParamRule = grammar.getRule('orderby_param')
+      match = matchNodes(orderByParamRule, orderIndex+2, rightIndex, source)
       if not match:
         raise Exception('select from order by param error, linenum "%d", source "%s"' % (byToken.linenum, source.filename))
 
@@ -1076,11 +1114,19 @@ class Parser(object):
 
       selectFrom.setOrderField(paramName, paramOrder)
 
-  def parseSelectConcatBody(selectConcat, leftIndex, rightIndex, source):
+  def parseSelectConcatBody(self, selectConcat, left, right, source):
     """
     Add to selectConcat collections.
     """
-    raise Exception('parseSelectConcatBody')
+    cursor = left
+    while cursor <= right:
+      cursorToken = source.tokens[cursor]
+      if not (cursorToken.wordtype in [',', 'name']):
+        raise Exception('select concat body unknown tokey wordtype, actual "%s", linenum "%d", source "%s"' % (cursorToken.wordtype, cursorToken.linenum, source.filename))
+      if cursorToken.wordtype == 'name':
+        name = cursorToken.word
+        selectConcat.addCollection(name)
+      cursor = cursor + 1
 
   def parseHtml(self, left, right, source):
     """

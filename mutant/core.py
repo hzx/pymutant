@@ -136,6 +136,16 @@ class SelectConcatNode(Node):
   def addCollection(self, collection):
     self.collections.append(collection)
 
+class DeleteFromNode(Node):
+
+  def __init__(self, collName):
+    self.nodetype = 'delete_from'
+    self.collName = collName
+    self.where = None
+
+  def setWhere(self, where):
+    self.where = where
+
 class TagNode(Node):
 
   def __init__(self, name):
