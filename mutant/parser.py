@@ -140,9 +140,9 @@ class Parser(object):
     grammar.setHandler('function_body', self.matchFunctionBody)
     grammar.setHandler('function_return', self.handleFunctionReturn)
 
-    grammar.setHandler('enum_body', self.handleEnumBody)
+    grammar.setHandler('enum_body', self.matchEnumBody)
 
-    grammar.setHandler('struct_body', self.handleStructBody)
+    grammar.setHandler('struct_body', self.matchStructBody)
 
     grammar.setHandler('class_body', self.matchClassBody)
     grammar.setHandler('constructor', self.createConstructor)
@@ -603,7 +603,10 @@ class Parser(object):
 
     return returnNode
 
-  def handleEnumBody(self, leftIndex, rightIndex, source):
+  def matchEnumBody(self, leftIndex, rightIndex, source):
+    """
+    Match { and }
+    """
     if source.tokens[leftIndex].word == '{':
       bracketCounter = BracketCounter()
       closeIndex = bracketCounter.findPair(leftIndex, rightIndex, source.tokens)
@@ -612,7 +615,10 @@ class Parser(object):
       return match
     return None
 
-  def handleStructBody(self, leftIndex, rightIndex, source):
+  def matchStructBody(self, leftIndex, rightIndex, source):
+    """
+    Match { and }
+    """
     if source.tokens[leftIndex].word == '{':
       bracketCounter = BracketCounter()
       closeIndex = bracketCounter.findPair(leftIndex, rightIndex, source.tokens)
@@ -658,6 +664,9 @@ class Parser(object):
     return con
 
   def matchConstructorInit(self, leftIndex, rightIndex, source):
+    """
+    Return match between "{" and "} or ;"
+    """
     leftToken = source.tokens[leftIndex]
     if leftToken.word == '{':
       # search }
@@ -962,10 +971,41 @@ class Parser(object):
       cursor = match.rightIndex + 1
 
   def parseStructBody(self, st, leftIndex, rightIndex, source):
-    nodes = self.parseByRules(grammar.struct_body_rules, leftIndex, rightIndex, source)
+    """
+    Add core.StructVariableNode to st.
+    """
+    # check if struct have body
+    if (rightIndex - leftIndex) == 1: return
 
-    for node in nodes:
-      st.addVariable(node)
+    structVarRule = grammar.getRule('struct_variable')
+    cursor = leftIndex
+
+    while cursor <= rightIndex:
+      leftToken = source.tokens[cursor]
+
+      # find ;
+      semicolonIndex = findWordIndex(';', cursor, rightIndex, source.tokens)
+      if semicolonIndex < 0:
+        raise Exception('struct variable not found ;, linenum "%d", source "%s"' % (leftToken.linenum, source.filename))
+
+      # match struct variable nodes
+      match = matchNodes(structVarRule, cursor, semicolonIndex-1, source)
+      if match == None:
+        raise Exception('no matches found for struct variable body, first token "%s", linenum "%d", source "%s"' % (leftToken.word, leftToken.linenum, source.filename))
+
+      # add struct variable
+      decltype = match.params['type']
+      name = match.params['name'][0].word
+      var = core.StructVariableNode(decltype, name)
+
+      # add strut variables params
+      self.runHandlers(var, match.handlers, source)
+
+      # add variable to struct
+      st.addVariable(var)
+
+      # shift cursor
+      cursor = semicolonIndex + 1
 
   def parseClassBody(self, cl, leftIndex, rightIndex, source):
     nodes = self.parseByRules(grammar.class_body_rules, leftIndex, rightIndex, source)

@@ -60,6 +60,8 @@ rules = {
     'function_return': 'return ({operator}!)?',
     'function_call': '<name>(name) (',
 
+    'struct_variable': '<type>({type}) <name>(name) {constructor_init}!',
+
     # 'constructor': '({function_params})! {function_body}!',
     'constructor': '( ) {function_body}!',
     'constructor_call': '<name>(name) ( ) {constructor_init}!',

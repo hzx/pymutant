@@ -221,6 +221,21 @@ class CompilerTest(unittest.TestCase):
 
     # test structs
 
+    structUser = module.structs.get('User', None) 
+    self.assertIsNotNone(structUser)
+    self.assertEqual(len(structUser.variables), 2)
+    stuId = structUser.variables.get('id', None)
+    self.assertIsNotNone(stuId)
+    self.assertEqual(stuId.nodetype, 'struct_variable')
+    self.assertEqual(len(stuId.inits), 1)
+    self.assertIsNotNone(stuId.inits.get("'validate'", None))
+    self.assertEqual(stuId.inits["'validate'"].nodetype, 'value')
+    self.assertEqual(stuId.inits["'validate'"].value.word, 'wender.validateLength')
+    stuUsername = structUser.variables.get('username', None)
+    self.assertIsNotNone(stuUsername)
+    self.assertEqual(stuUsername.nodetype, 'struct_variable')
+    self.assertEqual(len(stuUsername.inits), 0)
+
     # test classes
 
     classCountManager = module.classes.get('CountManager', None)

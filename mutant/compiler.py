@@ -42,12 +42,13 @@ class Compiler(object):
 
     # parse each module in lexer.modules cache
     for name, module in self.loader.modules.items():
+      # check cache
       if name in self.compiledModules:
         continue
       self.lexer.parse(module)
       self.parser.parse(module)
 
-    # check and add to module to cache
+    # check and add module to cache
     for name, module in self.loader.modules.items():
       self.checker.check(module)
       self.compiledModules[name] = module

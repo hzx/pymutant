@@ -1,0 +1,6 @@
+
+
+struct User {
+  string id { 'validate': wender.validateLength };
+  string username {};
+} 

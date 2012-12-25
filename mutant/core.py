@@ -80,9 +80,17 @@ class StructNode(Node):
   def addVariable(self, variable):
     self.variables[variable.name] = variable
 
-  def addFunction(self, function):
-    self.functions[function.name] = function
+class StructVariableNode(Node):
 
+  def __init__(self, decltype, name):
+    self.nodetype = 'struct_variable'
+    self.decltype = decltype
+    self.name = name
+    # used like in class constructor, but with other semantics
+    self.inits = {}
+
+  def addInit(self, name, body):
+    self.inits[name] = body
 
 class ClassNode(Node):
 
