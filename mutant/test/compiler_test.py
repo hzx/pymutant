@@ -218,6 +218,13 @@ class CompilerTest(unittest.TestCase):
     # test functions
 
     # test enums
+    enumDomNodeType = module.enums.get('DomNodeType', None)
+    self.assertIsNotNone(enumDomNodeType)
+    self.assertEqual(len(enumDomNodeType.members), 2)
+    self.assertIsNotNone(enumDomNodeType.members.get('ELEMENT', None))
+    self.assertIsNotNone(enumDomNodeType.members['ELEMENT'], '1')
+    self.assertIsNotNone(enumDomNodeType.members.get('TEXT', None))
+    self.assertIsNotNone(enumDomNodeType.members['TEXT'], '2')
 
     # test structs
 
@@ -243,3 +250,5 @@ class CompilerTest(unittest.TestCase):
 
     self.assertIsNotNone(classCountManager.constructor)
     self.assertEqual(classCountManager.name, 'CountManager')
+
+    self.assertEqual(classCountManager.baseName, 'BaseManager')

@@ -263,7 +263,9 @@ class Parser(object):
     Create core.ClassNode.
     """
     name = match.params['name'][0].word
-    baseName = match.params.get('base_name', None)
+    baseName = None
+    if 'base_name' in match.params:
+      baseName = match.params['base_name'][0].word
     cl = core.ClassNode(name, baseName)
 
     self.runHandlers(cl, match.handlers, source)

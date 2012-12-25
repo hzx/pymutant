@@ -1,6 +1,13 @@
 
 
-class CountManager {
+class BaseManager {
+  void resetCounter() {
+    this.counter = 0;
+  }
+}
+
+
+class CountManager extends BaseManager {
   () {
   }
 

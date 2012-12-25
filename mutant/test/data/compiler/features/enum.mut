@@ -1,0 +1,6 @@
+
+
+enum DomNodeType {
+  ELEMENT = 1;
+  TEXT = 2;
+}
