@@ -111,6 +111,30 @@ class ClassNode(Node):
   def addFunction(self, function):
     self.functions[function.name] = function
 
+class InsertNode(Node):
+
+  def __init__(self, collName):
+    self.nodetype = 'insert'
+    self.collName = collName
+    self.value = None
+    self.isAfter = False
+    self.isBefore = False
+    self.where = None
+
+  def setValue(self, value):
+    self.value = value
+
+  def setAfter(self):
+    self.isAfter = True
+    self.isBefore = False
+
+  def setBefore(self):
+    self.isAfter = False
+    self.isBefore = True
+
+  def setWhere(self, where):
+    self.where = where
+
 class SelectFromNode(Node):
 
   def __init__(self, collName):
@@ -135,6 +159,20 @@ class SelectConcatNode(Node):
 
   def addCollection(self, collection):
     self.collections.append(collection)
+
+class UpdateNode(Node):
+
+  def __init__(self, collName):
+    self.nodetype = 'update'
+    self.collName = collName
+    self.items = {}
+    self.where = None
+
+  def addItem(self, name, value):
+    self.items[name] = value
+
+  def setWhere(self, where):
+    self.where = where
 
 class DeleteFromNode(Node):
 

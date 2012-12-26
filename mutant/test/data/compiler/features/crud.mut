@@ -1,0 +1,28 @@
+
+
+struct Ware {
+  string id {};
+  string name {};
+}
+
+struct Store {
+  string id {};
+  string name {};
+  Ware[] wares {};
+  Ware[] popularWares { ref: wares };
+  Ware[] oldWares {};
+}
+
+Ware[] wares;
+Ware[] oldWares;
+
+var ware = Ware() { name: 'Pen' };
+
+int insertCount = insert wares value ware;
+int insertBeforeWhereCount = insert wares value ware after id == '11111';
+int insertAfterWhereCount = insert wares value ware before id == '11111';
+var selectFrom = select from messages where name == 'test' order by createDate asc; 
+var selectConcat = select concat wares, oldwares;
+int updateCount = update wares set name = 'TestWare' where id == '11111';
+var deleteFrom = delete from wares where name == 'test';
+

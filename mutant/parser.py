@@ -158,8 +158,14 @@ class Parser(object):
     grammar.setHandler('match_array_body', self.matchArrayBody)
     grammar.setHandler('match_dict_body', self.matchDictBody)
 
+    grammar.setHandler('insert', self.createInsert)
+    grammar.setHandler('insert_body', self.matchInsertBody)
+    grammar.setHandler('parseInsertBody', self.parseInsertBody)
     grammar.setHandler('select_from', self.createSelectFrom)
     grammar.setHandler('select_concat', self.createSelectConcat)
+    grammar.setHandler('update', self.createUpdate)
+    grammar.setHandler('update_body', self.matchUpdateBody)
+    grammar.setHandler('parseUpdateBody', self.parseUpdateBody)
     grammar.setHandler('delete_from', self.createDeleteFrom)
 
     grammar.setHandler('selectfrom_body', self.matchSelectFromBody)
@@ -296,7 +302,73 @@ class Parser(object):
 
     return nodes[0]
 
+  def createInsert(self, match, source):
+    """
+    Create core.InsertNode
+    """
+    name = match.params['name'][0].word
+
+    ins = core.InsertNode(name)
+
+    self.runHandlers(ins, match.handlers, source)
+
+    return ins
+
+  def matchInsertBody(self, left, right, source):
+    """
+    Match to ; or to right
+    """
+    rightParse = right
+    rightEnd = right
+
+    # find ;
+    semicolonIndex = findWordIndex(';', left, right, source.tokens)
+    if semicolonIndex >= 0:
+      rightParse = semicolonIndex - 1
+      rightEnd = semicolonIndex
+
+    # compose match
+    match = Match(left, rightEnd)
+    match.handlers['parseInsertBody'] = Match(left, rightParse)
+
+    return match
+
+  def parseInsertBody(self, ins, left, right, source):
+    """
+    Add value to core.InsertNode, after or before expression.
+    """
+    # cursor for parsing after before where
+    cursor = left
+    # right cursor for parsing value expression
+    rightCursor = right
+
+    # search after word
+    afterIndex = findWordIndex('after', left, right, source.tokens)
+    if afterIndex >= 0:
+      ins.setAfter()
+      cursor = afterIndex + 1
+      rightCursor = afterIndex - 1
+
+    # search before word
+    beforeIndex = findWordIndex('before', left, right, source.tokens)
+    if beforeIndex >= 0:
+      ins.setBefore()
+      cursor = beforeIndex + 1
+      rightCursor = beforeIndex - 1
+
+    # parse value expression
+    value = self.createExpression(Match(left, rightCursor), source)
+    ins.setValue(value)
+
+    # parse where expression
+    if afterIndex >= 0 or beforeIndex >= 0:
+      where = self.createExpression(Match(cursor, right), source)
+      ins.setWhere(where)
+
   def createSelectFrom(self, match, source):
+    """
+    Create core.SelectFromNode
+    """
     name = match.params['name'][0].word
     selectFrom = core.SelectFromNode(name)
 
@@ -339,6 +411,81 @@ class Parser(object):
 
     return match
 
+  def createUpdate(self, match, source):
+    """
+    Create core.UpdateNode
+    """
+    name = match.params['name'][0].word
+    upd = core.UpdateNode(name)
+
+    self.runHandlers(upd, match.handlers, source)
+
+    return upd
+
+  def matchUpdateBody(self, left, right, source):
+    """
+    Match to ; or to right
+    """
+    rightParse = right
+    rightEnd = right
+
+    # find ;
+    semicolonIndex = findWordIndex(';', left, right, source.tokens)
+    if semicolonIndex >= 0:
+      rightParse = semicolonIndex - 1
+      rightEnd = semicolonIndex
+
+    # compose match
+    match = Match(left, rightEnd)
+    match.handlers['parseUpdateBody'] = Match(left, rightParse)
+
+    return match
+
+  def parseUpdateBody(self, upd, left, right, source):
+    """
+    Add set items and where expression to update.
+    """
+    # search where
+    whereIndex = findWordIndex('where', left, right, source.tokens)
+    if whereIndex < 0:
+      raise Exception('parse update body error, where not found, linenum "%d", source "%d"' % (source.tokens[left].linenum, source.filename))
+
+    # parse where
+    where = self.createExpression(Match(whereIndex+1, right), source)
+    upd.setWhere(where)
+
+    # parse set items
+    cursor = left
+    while cursor < whereIndex:
+      rightCursor = whereIndex - 1
+      rightEnd = rightCursor
+      # find ,
+      commaIndex = findCommaIndex(cursor, rightEnd, source.tokens)
+      if commaIndex >= 0:
+        rightCursor = commaIndex - 1
+        rightEnd = commaIndex
+
+      nameToken = source.tokens[cursor]
+      if nameToken.wordtype != 'name':
+        raise Exception('Update set must begin from name token, actual "%s", linenum "%d", source "%s"' % (nameToken.wordtype, nameToken.linenum, source.filename))
+
+      equalIndex = cursor + 1
+      leftExprIndex = cursor + 2
+      if (equalIndex > rightCursor) or (leftExprIndex > rightCursor):
+        raise Exception('Update set not enough tokens, linenum "%d", source "%s"' % (nameToken.linenum, source.filename))
+
+      equalToken = source.tokens[equalIndex]
+      if equalToken.wordtype != '=':
+        raise Exception('Update set not found = after name, actual "%s", linenum "%d", source "%s"' % (equalToken.wordtype, equalToken.linenum, source.filename))
+
+      expr = self.createExpression(Match(cursor+2, rightCursor), source)
+      name = nameToken.word
+
+      # add set item
+      upd.addItem(name, expr)
+
+      cursor = rightEnd + 1
+
   def createDeleteFrom(self, match, source):
     """
     Create core.DeleteFromNode.
@@ -354,11 +501,19 @@ class Parser(object):
     """
     Return match. Search ;.
     """
-    if source.tokens[left].word != 'where':
-      return None
+    rightParse = right
+    rightEnd = right
 
-    match = Match(left, right)
-    match.handlers['parseDeleteFromBody'] = Match(left, right)
+    semicolonIndex = findWordIndex(';', left, right, source.tokens)
+    if semicolonIndex >= 0:
+      rightParse = semicolonIndex - 1
+      rightEnd = semicolonIndex
+
+    if source.tokens[left].word != 'where':
+      raise Exception('delete from body, where not found, linenum "%d", source "%s"' % (source.tokens[left].linenum, source.filename))
+
+    match = Match(left, rightEnd)
+    match.handlers['parseDeleteFromBody'] = Match(left, rightParse)
 
     return match
 
@@ -961,7 +1116,7 @@ class Parser(object):
       # set body reactive
       if firstToken.word == ':=':
         var.setBodyReactive(True)
-      cursorLeft = leftIndex+1
+      cursorLeft = leftIndex + 1
 
     # create nodes by rules
     nodes = self.parseByRules(grammar.variable_body_rules, cursorLeft, rightIndex, source)

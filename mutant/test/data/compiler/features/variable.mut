@@ -1,33 +1,10 @@
 
 
-struct Ware {
-  string id {};
-  string name {};
-}
-
-struct Store {
-  string id {};
-  string name {};
-  Ware[] wares {};
-  Ware[] popularWares { ref: wares };
-  Ware[] oldWares {};
-}
-
-Ware[] wares;
-Ware[] oldWares;
-
-var ware = Ware() { name: 'Pen' };
-
-
 var messages = ['a', 'b', 'c'];
 
 string message = messages[0];
 
 bool isChecked = false;
-
-var selectFrom = select from messages where name == 'test' order by createDate asc; 
-var selectConcat = select concat wares, oldwares;
-var deleteFrom = delete from wares where name == 'test';
 
 enum TokenKind {
   LITBOOL = 1;

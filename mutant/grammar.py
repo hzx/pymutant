@@ -15,7 +15,7 @@ SYSTEM_TOKENS = [
     'static', 'interface', 'class', 'struct', 'enum', 'optional', 'extends',
     'implements', 'this',
     'if', 'else',
-    'select', 'concat', 'delete', 'from', 'where', 'and', 'or', 'is', 'in', 'not', 'order', 'by', 
+    'insert', 'select', 'concat', 'update', 'delete', 'value', 'set', 'from', 'where', 'and', 'or', 'is', 'in', 'not', 'order', 'by', 'before', 'after', 'asc', 'desc',
     'map', 'reduce',
     'rmap',
     ]
@@ -82,11 +82,14 @@ rules = {
     'array_body': '{match_array_body}!',
     'dict_body': '{match_dict_body}!',
 
+    'insert': 'insert <name>(name) value {insert_body}!',
     'select_from': 'select from <name>(name) {selectfrom_body}!',
     'select_concat': 'select concat {selectconcat_body}!',
+    'update': 'update <name>(name) set {update_body}!',
+    # TODO(dem) move where to rule
     'delete_from': 'delete from <name>(name) {deletefrom_body}!',
 
-    'orderby_param': '<name>(name) <order>(name)',
+    'orderby_param': '<name>(name) <order>(asc|desc)',
 
     'expression': '{expression_body}!',
 
@@ -127,8 +130,8 @@ handlers = {}
 
 global_rules = ['define', 'variable', 'function', 'enum', 'struct', 'class']
 define_body_rules = ['function_declaration', 'type']
-variable_body_rules = ['constructor_call', 'select_from', 'select_concat', 'delete_from', 'tag', 'array_body', 'array_value', 'dict_body', 'expression']
-function_body_rules = ['if', 'variable', 'variable_assign', 'function_return','expression']
+variable_body_rules = ['constructor_call', 'insert', 'select_from', 'select_concat', 'update', 'delete_from', 'tag', 'array_body', 'array_value', 'dict_body', 'expression']
+function_body_rules = ['insert', 'update', 'delete_from', 'if', 'variable', 'variable_assign', 'function_return','expression']
 enum_body_rules = ['enum_var']
 struct_body_rules = ['variable']
 class_body_rules = ['constructor', 'variable', 'function']
