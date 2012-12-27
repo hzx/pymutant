@@ -21,6 +21,7 @@ var ware = Ware() { name: 'Pen' };
 int insertCount = insert wares value ware;
 int insertBeforeWhereCount = insert wares value ware after id == '11111';
 int insertAfterWhereCount = insert wares value ware before id == '11111';
+var selectOne = select one messages where name == 'test';
 var selectFrom = select from messages where name == 'test' order by createDate asc; 
 var selectConcat = select concat wares, oldwares;
 int updateCount = update wares set name = 'TestWare' where id == '11111';

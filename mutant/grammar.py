@@ -15,7 +15,7 @@ SYSTEM_TOKENS = [
     'static', 'interface', 'class', 'struct', 'enum', 'optional', 'extends',
     'implements', 'this',
     'if', 'else',
-    'insert', 'select', 'concat', 'update', 'delete', 'value', 'set', 'from', 'where', 'and', 'or', 'is', 'in', 'not', 'order', 'by', 'before', 'after', 'asc', 'desc',
+    'insert', 'select', 'concat', 'update', 'delete', 'one', 'value', 'set', 'from', 'where', 'and', 'or', 'is', 'in', 'not', 'order', 'by', 'before', 'after', 'asc', 'desc',
     'map', 'reduce',
     'rmap',
     ]
@@ -83,6 +83,7 @@ rules = {
     'dict_body': '{match_dict_body}!',
 
     'insert': 'insert <name>(name) value {insert_body}!',
+    'select_one': 'select one <name>(name) where {selectone_body}!',
     'select_from': 'select from <name>(name) {selectfrom_body}!',
     'select_concat': 'select concat {selectconcat_body}!',
     'update': 'update <name>(name) set {update_body}!',
@@ -130,7 +131,7 @@ handlers = {}
 
 global_rules = ['define', 'variable', 'function', 'enum', 'struct', 'class']
 define_body_rules = ['function_declaration', 'type']
-variable_body_rules = ['constructor_call', 'insert', 'select_from', 'select_concat', 'update', 'delete_from', 'tag', 'array_body', 'array_value', 'dict_body', 'expression']
+variable_body_rules = ['constructor_call', 'insert', 'select_one', 'select_from', 'select_concat', 'update', 'delete_from', 'tag', 'array_body', 'array_value', 'dict_body', 'expression']
 function_body_rules = ['insert', 'update', 'delete_from', 'if', 'variable', 'variable_assign', 'function_return','expression']
 enum_body_rules = ['enum_var']
 struct_body_rules = ['variable']

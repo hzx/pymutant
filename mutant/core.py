@@ -9,7 +9,7 @@ class Param(object):
 
 
 """
-Language semantic elements.
+Language semantic nodes.
 """
 
 class Node(object):
@@ -131,6 +131,16 @@ class InsertNode(Node):
   def setBefore(self):
     self.isAfter = False
     self.isBefore = True
+
+  def setWhere(self, where):
+    self.where = where
+
+class SelectOneNode(Node):
+
+  def __init__(self, collName):
+    self.nodetype = 'select_one'
+    self.collName = collName
+    self.where = None
 
   def setWhere(self, where):
     self.where = where

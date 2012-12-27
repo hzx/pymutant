@@ -161,6 +161,9 @@ class Parser(object):
     grammar.setHandler('insert', self.createInsert)
     grammar.setHandler('insert_body', self.matchInsertBody)
     grammar.setHandler('parseInsertBody', self.parseInsertBody)
+    grammar.setHandler('select_one', self.createSelectOne)
+    grammar.setHandler('selectone_body', self.matchSelectOneBody)
+    grammar.setHandler('parseSelectOneBody', self.parseSelectOneBody)
     grammar.setHandler('select_from', self.createSelectFrom)
     grammar.setHandler('select_concat', self.createSelectConcat)
     grammar.setHandler('update', self.createUpdate)
@@ -365,6 +368,41 @@ class Parser(object):
       where = self.createExpression(Match(cursor, right), source)
       ins.setWhere(where)
 
+  def createSelectOne(self, match, source):
+    """
+    Create core.SelectOneNode
+    """
+    name = match.params['name'][0].word
+    selectOne = core.SelectOneNode(name)
+
+    self.runHandlers(selectOne, match.handlers, source)
+
+    return selectOne
+
+  def matchSelectOneBody(self, left, right, source):
+    """
+    Match to ; or right
+    """
+    rightCursor = right
+    rightEnd = right
+
+    semicolonIndex = findWordIndex(';', left, right, source.tokens)
+    if semicolonIndex >= 0:
+      rightCursor = semicolonIndex - 1
+      rightEnd = semicolonIndex
+
+    match = Match(left, rightEnd)
+    match.handlers['parseSelectOneBody'] = Match(left, rightCursor)
+
+    return match
+
+  def parseSelectOneBody(self, selectOne, left, right, source):
+    """
+    Add where to selectOne node.
+    """
+    expr = self.createExpression(Match(left, right), source)
+    selectOne.setWhere(expr)
+
   def createSelectFrom(self, match, source):
     """
     Create core.SelectFromNode
@@ -380,9 +418,10 @@ class Parser(object):
     """
     Return match.
     """
-    semicolonIndex = findWordIndex(';', leftIndex, rightIndex, source.tokens)
     rightCursor = rightIndex
     rightEnd = rightIndex
+
+    semicolonIndex = findWordIndex(';', leftIndex, rightIndex, source.tokens)
     if semicolonIndex >= 0:
       rightCursor = semicolonIndex - 1
       rightEnd = semicolonIndex
