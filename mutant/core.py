@@ -135,6 +135,12 @@ class InsertNode(Node):
   def setWhere(self, where):
     self.where = where
 
+class SelectCountNode(Node):
+
+  def __init__(self, collName):
+    self.nodetype = 'select_count'
+    self.collName = collName
+
 class SelectOneNode(Node):
 
   def __init__(self, collName):

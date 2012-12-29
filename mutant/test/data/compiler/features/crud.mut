@@ -18,6 +18,7 @@ Ware[] oldWares;
 
 var ware = Ware() { name: 'Pen' };
 
+int wareCount = select count wares;
 int insertCount = insert wares value ware;
 int insertBeforeWhereCount = insert wares value ware after id == '11111';
 int insertAfterWhereCount = insert wares value ware before id == '11111';

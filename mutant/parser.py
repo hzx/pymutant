@@ -161,6 +161,7 @@ class Parser(object):
     grammar.setHandler('insert', self.createInsert)
     grammar.setHandler('insert_body', self.matchInsertBody)
     grammar.setHandler('parseInsertBody', self.parseInsertBody)
+    grammar.setHandler('select_count', self.createSelectCount)
     grammar.setHandler('select_one', self.createSelectOne)
     grammar.setHandler('selectone_body', self.matchSelectOneBody)
     grammar.setHandler('parseSelectOneBody', self.parseSelectOneBody)
@@ -367,6 +368,15 @@ class Parser(object):
     if afterIndex >= 0 or beforeIndex >= 0:
       where = self.createExpression(Match(cursor, right), source)
       ins.setWhere(where)
+
+  def createSelectCount(self, match, source):
+    """
+    Create core.SelectCountNode
+    """
+    name = match.params['name'][0].word
+    selectCount = core.SelectCountNode(name)
+
+    return selectCount
 
   def createSelectOne(self, match, source):
     """
