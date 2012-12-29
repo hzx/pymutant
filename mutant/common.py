@@ -29,6 +29,7 @@ class Source(object):
 class Module(object):
 
   def __init__(self, name, sources):
+    self.path = ''
     self.name = name
     self.sources = sources
 

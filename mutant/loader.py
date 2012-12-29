@@ -57,6 +57,7 @@ class Loader(object):
 
     # create module
     module = Module(name, sources)
+    module.path = modulepath
 
     # add module to cache
     self.modules[name] = module
