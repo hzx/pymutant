@@ -76,7 +76,7 @@ rules = {
     'simple_type': 'bool|int|float|string|datetime|tag|event|name',
     'array_type': '{simple_type} [ ]',
     'dict_type': '{ {simple_type} : {simple_type} }',
-    'type': '{array_type}|{simple_type}',
+    'type': '{dict_type}|{array_type}|{simple_type}',
 
     'array_value': '<value>(name) [ <index>(litint) ]',
     'array_body': '{match_array_body}!',

@@ -1068,7 +1068,7 @@ class Parser(object):
         cursor = closedIndex + 1
         continue
       # add variable
-      if token.wordtype in ['name', 'litint', 'litfloat', 'litstring', 'litbool']:
+      if token.wordtype in ['name', 'litint', 'litfloat', 'litstring', 'litbool', 'none']:
         nodes.append({'kind': 'value', 'match': Match(cursor, cursor), 'weight': bracketWeight})
       # check bracket
       # set nodes additional weights
@@ -1183,7 +1183,7 @@ class Parser(object):
       # parse by param rule
       match = matchNodes(paramRule, cursor, rightIndex, source)
       if match == None:
-        raise Exception('not parse function params, source "%s", linenum "%d"' % (source.filename, source.tokens[leftIndex].linenum))
+        raise Exception('not parse function params, source "%s", linenum "%d", tokens "%s"' % (source.filename, source.tokens[leftIndex].linenum, tokensToString(source.tokens[cursor:rightIndex+1])))
       # move cursor from match.rightIndex to next and after comma
       cursor = match.rightIndex + 2
       # add parameter to function
