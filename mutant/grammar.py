@@ -56,7 +56,7 @@ rules = {
     'function_declaration': '{function_type} {function_params}! {function_body}!',
     'function_type': '<type>(void|{type})',
     'function_name': '<name>(name)',
-    'function_param': '<type>({type}) <name>(name)',
+    'function_param': '<type>(var|{type}) <name>(name)',
     'function_return': 'return ({operator}!)?',
     'function_call': '<name>(name) (',
 
