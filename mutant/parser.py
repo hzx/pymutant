@@ -179,6 +179,12 @@ class Parser(object):
     grammar.setHandler('tag', self.createTag)
     grammar.setHandler('tag_body', self.matchTag)
 
+    grammar.setHandler('if', self.createIf)
+    grammar.setHandler('if_body', self.matchIfBody)
+    grammar.setHandler('parseIfExpr', self.parseIfExpr)
+    grammar.setHandler('parseIfBody', self.parseIfBody)
+    grammar.setHandler('parseElseBody', self.parseElseBody)
+
     grammar.setHandler('operator', self.handleOperator)
 
     # bind parsers
@@ -619,6 +625,80 @@ class Parser(object):
 
     raise Exception('not found close bracket ">" or "/>" for tag, linenum "%d", source "%s"' % (source.tokens[leftIndex].linenum, source.filename))
 
+  def createIf(self, match, source):
+    """
+    Create core.IfNode.
+    """
+    ifNode = core.IfNode()
+
+    self.runHandlers(ifNode, match.handlers, source)
+
+    return ifNode
+      
+  def matchIfBody(self, left, right, source):
+    leftToken = source.tokens[left]
+
+    curlyIndex = findWordIndex('{', left, right, source.tokens)
+    if curlyIndex < 0:
+      return None
+
+    exprMatch = Match(left, curlyIndex-1)
+
+    bracketCounter = BracketCounter()
+
+    # search close curly
+    closeCurlyIndex = bracketCounter.findPair(curlyIndex, right, source.tokens)
+    if closeCurlyIndex < 0:
+      return None
+
+    bodyMatch = Match(curlyIndex+1, closeCurlyIndex-1)
+
+    rightEnd = closeCurlyIndex
+
+    # search else
+    elseMatch = None
+    elseIndex = closeCurlyIndex + 1
+    if (elseIndex < right) and (source.tokens[closeCurlyIndex+1].word == 'else'):
+      elseOpen = elseIndex + 1
+      if source.tokens[elseOpen].word != '{':
+        raise Exception('else must have { }, linenum "%d", source "%s"' % (leftToken.linenum, source.filename))
+      elseClose = bracketCounter.findPair(elseOpen, right, source.tokens)
+
+      # create else Match
+
+      elseMatch = Match(elseOpen+1, elseClose-1)
+      rightEnd = elseClose
+
+    # create mathces
+
+    match = Match(left, rightEnd)
+    match.handlers['parseIfExpr'] = exprMatch
+    match.handlers['parseIfBody'] = bodyMatch
+    if elseMatch != None:
+      match.handlers['parseElseBody'] = elseMatch
+
+    return match
+
+  def parseIfExpr(self, ifNode, left, right, source):
+    expr = self.createExpression(Match(left, right), source)
+    ifNode.expr = expr
+
+  def parseIfBody(self, ifNode, left, right, source):
+    if (right - left) <= 1: return
+
+    # bodyRule = grammar.getRule('function_body')
+    nodes = self.parseByRules(grammar.function_body_rules, left, right, source)
+
+    ifNode.body = nodes
+
+  def parseElseBody(self, ifNode, left, right, source):
+    if (right - left) <= 1: return
+
+    # bodyRule = grammar.getRule('function_body')
+    nodes = self.parseByRules(grammar.function_body_rules, left, right, source)
+
+    ifNode.elseBody = nodes
+
   def findCloseTag(self, name, leftIndex, rightIndex, source):
     """
     Find tag </ name > in the end.
@@ -1040,9 +1120,14 @@ class Parser(object):
 
     # create nodes list with weights
     cursor = match.leftIndex
+
+    rightEnd = match.rightIndex
+    if source.tokens[match.rightIndex].word == ';':
+      rightEnd = match.rightIndex - 1
+
     nodes = []
     bracketWeight = 0
-    while cursor <= match.rightIndex:
+    while cursor <= rightEnd:
       token = source.tokens[cursor]
       # check system functions
       if token.word in grammar.functionNames:
@@ -1068,7 +1153,7 @@ class Parser(object):
         cursor = closedIndex + 1
         continue
       # add variable
-      if token.wordtype in ['name', 'litint', 'litfloat', 'litstring', 'litbool', 'none']:
+      if token.wordtype in ['name', 'litint', 'litfloat', 'litstring', 'litbool', 'none', 'asc']:
         nodes.append({'kind': 'value', 'match': Match(cursor, cursor), 'weight': bracketWeight})
       # check bracket
       # set nodes additional weights

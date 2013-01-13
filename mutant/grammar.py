@@ -96,8 +96,8 @@ rules = {
     'expression': '{expression_body}!',
 
     'tag': '{tag_body}!',
-    'tagContent': '<name>(name) {tagattrs}!',
-    'tagattrs': '',
+    # 'tagContent': '<name>(name) {tagattrs}!',
+    # 'tagattrs': '',
 
     'if': 'if {if_body}!',
     }

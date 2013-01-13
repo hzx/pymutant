@@ -214,6 +214,14 @@ class TagNode(Node):
   def addChild(self, tag):
     self.childs.append(tag)
 
+class IfNode(Node):
+
+  def __init__(self):
+    self.nodetype = 'if'
+    self.expr = None
+    self.body = []
+    self.elseBody = []
+
 # for calculations
 
 class ValueNode(Node):

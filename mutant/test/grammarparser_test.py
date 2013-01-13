@@ -68,9 +68,10 @@ class GrammarParserTest(unittest.TestCase):
     self.assertIsNotNone(actual)
     self.assertEqual(len(actual), 1)
     typeNode = actual[0]
-    self.assertEqual(len(typeNode.childs), 2)
-    self.assertEqual(typeNode.childs[0].name, 'array_type')
-    self.assertEqual(typeNode.childs[1].name, 'simple_type')
+    self.assertEqual(len(typeNode.childs), 3)
+    self.assertEqual(typeNode.childs[0].name, 'dict_type')
+    self.assertEqual(typeNode.childs[1].name, 'array_type')
+    self.assertEqual(typeNode.childs[2].name, 'simple_type')
 
     # simpleTypeNode = mt.AltNode()
     # simpleTypeNode.childs.append(mt.ValueNode('bool'))

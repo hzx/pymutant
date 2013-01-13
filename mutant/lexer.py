@@ -36,9 +36,9 @@ class Lexer(object):
       if linenum in source.skiplines: continue
 
       # check alphabet
-      for c in line:
-        if self.alpha_re.search(c) == None:
-          raise errors.UnknownSymbol('unknown symbol "%s" in file "%s", linenum "%d".' % (c, source.filename, linenum))
+      # for c in line:
+      #   if self.alpha_re.search(c) == None:
+      #     raise errors.UnknownSymbol('unknown symbol "%s" in file "%s", linenum "%d".' % (c, source.filename, linenum))
 
       # tokenize
       result = self.tokens_re.findall(line)
