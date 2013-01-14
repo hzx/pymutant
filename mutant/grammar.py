@@ -70,7 +70,7 @@ rules = {
 
     'enum_var': '<name>(name) = <value>(litint) ;',
     'struct_extends': 'extends <base_name>(name)',
-    'class_extends': 'extends <base_name>(name)',
+    'class_extends': 'extends <base_name>(name|tag)',
     'order_by': '<order_field>(name)',
 
     'simple_type': 'bool|int|float|string|datetime|tag|event|name',
