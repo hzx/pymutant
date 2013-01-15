@@ -1,5 +1,5 @@
 
 Message[] getModerated(Message[] messages) {
-  var moderatedMessages = select from messages where moderated == true;
+  var moderatedMessages = select from messages where moderated is true;
   return moderatedMessages;
 }

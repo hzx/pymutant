@@ -20,11 +20,11 @@ var ware = Ware() { name: 'Pen' };
 
 int wareCount = select count wares;
 int insertCount = insert wares value ware;
-int insertBeforeWhereCount = insert wares value ware after id == '11111';
-int insertAfterWhereCount = insert wares value ware before id == '11111';
-var selectOne = select one messages where name == 'test';
-var selectFrom = select from messages where name == 'test' order by createDate asc; 
+int insertBeforeWhereCount = insert wares value ware after id is '11111';
+int insertAfterWhereCount = insert wares value ware before id is '11111';
+var selectOne = select one messages where name is 'test';
+var selectFrom = select from messages where name is 'test' order by createDate asc; 
 var selectConcat = select concat wares, oldwares;
-int updateCount = update wares set name = 'TestWare' where id == '11111';
-var deleteFrom = delete from wares where name == 'test';
+int updateCount = update wares set name = 'TestWare' where id is '11111';
+var deleteFrom = delete from wares where name is 'test';
 

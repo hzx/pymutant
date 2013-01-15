@@ -15,9 +15,8 @@ SYSTEM_TOKENS = [
     'static', 'interface', 'class', 'struct', 'enum', 'optional', 'extends',
     'implements', 'this',
     'if', 'else',
-    'insert', 'select', 'concat', 'update', 'delete', 'count', 'one', 'value', 'set', 'from', 'where', 'and', 'or', 'is', 'in', 'not', 'order', 'by', 'before', 'after', 'asc', 'desc',
+    'insert', 'select', 'concat', 'update', 'delete', 'count', 'one', 'value', 'set', 'from', 'where', 'and', 'or', 'is', 'isnot', 'in', 'not', 'order', 'by', 'before', 'after', 'asc', 'desc',
     'map', 'reduce',
-    'rmap',
     ]
 
 HTML_TAGS = [
@@ -103,7 +102,7 @@ rules = {
     }
 
 unaryFunctions = ['not']
-binaryFunctions = ['>', '<', '>=', '<=', '==', '!=', 'and', 'or', '*', '/', '%', '+', '-']
+binaryFunctions = ['>', '<', '>=', '<=', 'is', 'isnot', 'and', 'or', '*', '/', '%', '+', '-']
 functionNames = unaryFunctions + binaryFunctions
 functionsWeight = {
     'function': 4,
@@ -111,8 +110,8 @@ functionsWeight = {
     '<': 3,
     '>=': 3,
     '<=': 3,
-    '==': 3,
-    '!=': 3,
+    'is': 3,
+    'isnot': 3,
     'not': 3,
     'and': 3,
     'or': 3,

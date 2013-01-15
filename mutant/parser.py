@@ -1142,7 +1142,6 @@ class Parser(object):
         # DEBUG
         bracketToken = source.tokens[funcMatch.rightIndex]
         if bracketToken.word!= '(':
-          raise Exception(funcMatch)
           raise Exception('funcMatch ok mut funcMatch.rightIndex not "(", actual "%s", linenum "%d", leftIndex "%d", rightIndex "%d"' % (bracketToken.word, bracketToken.linenum, match.leftIndex, match.rightIndex))
 
         closedIndex = bracketCounter.findPair(funcMatch.rightIndex, match.rightIndex, source.tokens)
