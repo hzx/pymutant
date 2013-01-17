@@ -16,7 +16,7 @@ SYSTEM_TOKENS = [
     'implements', 'this',
     'if', 'else',
     'insert', 'select', 'concat', 'update', 'delete', 'count', 'one', 'value', 'set', 'from', 'where', 'and', 'or', 'is', 'isnot', 'in', 'not', 'order', 'by', 'before', 'after', 'asc', 'desc',
-    'map', 'reduce',
+    'map', 'reduce', 'sum',
     ]
 
 HTML_TAGS = [
@@ -46,7 +46,7 @@ LITBOOL_TYPE = 'litbool'
 rules = {
     'import': 'import <module>(name) as <alias>(name) ;',
     'define': 'define <alias>(name) {define_body}!',
-    'variable': '<type>(var|{type}) <name>(name) {variable_body}!',
+    'variable': '<type>(var|{type}) <name>(name|order) {variable_body}!',
     'function': '{function_type} ({function_name})? {function_params}! {function_body}!',
     'enum': 'enum <name>(name) {enum_body}!',
     'struct': 'struct <name>(name) ({struct_extends})? {struct_body}!',
@@ -55,7 +55,7 @@ rules = {
     'function_declaration': '{function_type} {function_params}! {function_body}!',
     'function_type': '<type>(void|{type})',
     'function_name': '<name>(name)',
-    'function_param': '<type>(var|{type}) <name>(name)',
+    'function_param': '<type>(var|{type}) <name>(name|order)',
     'function_return': 'return ({operator}!)?',
     'function_call': '<name>(name) (',
 
@@ -89,6 +89,8 @@ rules = {
     'update': 'update <name>(name) set {update_body}!',
     # TODO(dem) move where to rule
     'delete_from': 'delete from <name>(name) {deletefrom_body}!',
+    #return select sum order.foods by price;
+    'select_sum': 'select sum <name>(name) by <by>(name)',
 
     'orderby_param': '<name>(name) <order>(asc|desc)',
 
@@ -131,7 +133,7 @@ handlers = {}
 
 global_rules = ['define', 'variable', 'function', 'enum', 'struct', 'class']
 define_body_rules = ['function_declaration', 'type']
-variable_body_rules = ['constructor_call', 'insert', 'select_count', 'select_one', 'select_from', 'select_concat', 'update', 'delete_from', 'tag', 'array_body', 'array_value', 'dict_body', 'expression']
+variable_body_rules = ['constructor_call', 'insert', 'select_sum', 'select_count', 'select_one', 'select_from', 'select_concat', 'update', 'delete_from', 'tag', 'array_body', 'array_value', 'dict_body', 'expression']
 function_body_rules = ['insert', 'update', 'delete_from', 'if', 'variable', 'variable_assign', 'function_return','expression']
 enum_body_rules = ['enum_var']
 struct_body_rules = ['variable']

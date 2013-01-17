@@ -172,6 +172,8 @@ class Parser(object):
     grammar.setHandler('parseUpdateBody', self.parseUpdateBody)
     grammar.setHandler('delete_from', self.createDeleteFrom)
 
+    grammar.setHandler('select_sum', self.createSelectSum)
+
     grammar.setHandler('selectfrom_body', self.matchSelectFromBody)
     grammar.setHandler('selectconcat_body', self.matchSelectConcatBody)
     grammar.setHandler('deletefrom_body', self.matchDeleteFromBody)
@@ -270,7 +272,9 @@ class Parser(object):
     Create core.StructNode.
     """
     name = match.params['name'][0].word
-    baseName = match.params.get('base_name', None)
+    baseName = None
+    if 'base_name' in match.params:
+      baseName = match.params['base_name'][0].word
     st = core.StructNode(name, baseName)
 
     self.runHandlers(st, match.handlers, source)
@@ -294,7 +298,7 @@ class Parser(object):
   # OTHER RULES
 
   def createArrayValue(self, match, source):
-    value = match.params['value'][0]
+    value = match.params['value'][0].word
     index = match.params['index'][0].word
     return core.ArrayValueNode(value, index)
 
@@ -551,6 +555,17 @@ class Parser(object):
     self.runHandlers(deleteFrom, match.handlers, source)
 
     return deleteFrom
+
+  def createSelectSum(self, match, source):
+    """
+    Create core.SelectSumNode.
+    """
+    name = match.params['name'][0].word
+    by = match.params['by'][0].word
+
+    selectSum = core.SelectSumNode(name, by)
+
+    return selectSum
 
   def matchDeleteFromBody(self, left, right, source):
     """
@@ -966,9 +981,7 @@ class Parser(object):
     """
     Create core.FunctionNode with decltype and name is None
     """
-    name = None
-    decltype = None
-    con = core.FunctionNode(decltype, name)
+    con = core.FunctionNode(decltype=None, name=None)
 
     self.runHandlers(con, match.handlers, source)
 
@@ -980,7 +993,7 @@ class Parser(object):
     Create constructor (function) node.
     """
     name = match.params['name'][0].word
-    con = core.FunctionNode(None, None)
+    con = core.FunctionCallNode(name)
 
     self.runHandlers(con, match.handlers, source)
 
@@ -1019,8 +1032,8 @@ class Parser(object):
     """
     Create core.ValueNode.
     """
-    nameToken = match.params['name']
-    value = core.ValueNode(nameToken)
+    name = match.params['name']
+    value = core.ValueNode(name)
 
     self.runHandlers(value, match.handlers, source)
 
@@ -1044,7 +1057,7 @@ class Parser(object):
       raise Exception('Not found ";", linenum "%d", source "%s"' % (nameToken.linenum, source.filename))
 
     match = Match(left, semicolonIndex)
-    match.params['name'] = nameToken
+    match.params['name'] = nameToken.word
     match.handlers['parseVariableBody'] = Match(left+1, semicolonIndex-1)
     return match
 
@@ -1152,7 +1165,7 @@ class Parser(object):
         cursor = closedIndex + 1
         continue
       # add variable
-      if token.wordtype in ['name', 'litint', 'litfloat', 'litstring', 'litbool', 'none', 'asc']:
+      if token.wordtype in ['name', 'litint', 'litfloat', 'litstring', 'litbool', 'none', 'asc', 'order']:
         nodes.append({'kind': 'value', 'match': Match(cursor, cursor), 'weight': bracketWeight})
       # check bracket
       # set nodes additional weights
@@ -1336,6 +1349,9 @@ class Parser(object):
       cursor = semicolonIndex + 1
 
   def parseClassBody(self, cl, leftIndex, rightIndex, source):
+    """
+    Add to cl constructor, variables, functions
+    """
     nodes = self.parseByRules(grammar.class_body_rules, leftIndex, rightIndex, source)
     for node in nodes:
       if node.nodetype == 'function':
@@ -1397,7 +1413,7 @@ class Parser(object):
       if not match:
         raise Exception('select from order by param error, linenum "%d", source "%s"' % (byToken.linenum, source.filename))
 
-      paramName = match.params['name'][0]
+      paramName = match.params['name'][0].word
       paramOrder = match.params['order'][0].word
 
       selectFrom.setOrderField(paramName, paramOrder)

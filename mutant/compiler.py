@@ -67,3 +67,48 @@ class Compiler(object):
   def save(self, filename, lines):
     with open(filename, 'w') as f:
       f.writelines(lines)
+
+  def clearModule(self, module):
+    cleared = common.Module(module.name, [])
+
+    # variables
+    for key, node in module.variables.items():
+      var = self.clearVariable(node)
+      cleared.variables[var.name] = var
+
+    # functions
+    for key, node in module.functions.items():
+      func = self.clearFunction(node)
+      cleared.functions[func.name] = func
+
+    # enums
+    for key, node in module.enums.items():
+      en = self.clearEnum(node)
+      cleared.enums[en.name] = en
+
+    # structs
+    for key, node in module.classes.items():
+      st = self.clearStruct(node)
+      cleared.structs[st.name] = st
+
+    # classes
+    for key, node in module.classes.items():
+      cl = self.clearClass(node)
+      cleared.classes[cl.name] = cl
+
+
+  def clearVariable(self, var):
+    pass
+
+  def clearFunction(self, func):
+    pass
+
+  def clearEnum(self, en):
+    pass
+
+  def clearStruct(self, st):
+    pass
+
+  def clearClass(self, cl):
+    pass
+

@@ -40,3 +40,4 @@ class Module(object):
     self.enums = {}
     self.structs = {}
     self.classes = {}
+

@@ -18,6 +18,11 @@ class Node(object):
     pass
 
 class VariableNode(Node):
+  """
+  decltype - tokens
+  name - string
+  body - node
+  """
 
   def __init__(self, decltype, name):
     self.nodetype = 'variable'
@@ -33,6 +38,16 @@ class VariableNode(Node):
     self.bodyReactive = isReactive
 
 class FunctionNode(Node):
+  """
+  name - string
+    for constructor it None
+  decltype - tokens
+    for constructor it None
+  params - dict of name:type
+    name - string
+    type - tokens
+  bodyNodes - nodes
+  """
 
   def __init__(self, decltype, name):
     self.nodetype = 'function'
@@ -40,8 +55,6 @@ class FunctionNode(Node):
     self.name = name
     self.params = {}
     self.bodyNodes = []
-    # used only for class constructor
-    self.inits = {}
 
   def addParameter(self, name, decltype):
     """
@@ -53,11 +66,14 @@ class FunctionNode(Node):
   def addBodyNode(self, node):
     self.bodyNodes.append(node)
 
-  def addInit(self, name, body):
-    self.inits[name] = body
-
 
 class EnumNode(Node):
+  """
+  name - string
+  members - dict of name:value
+    name - string
+    value - litint
+  """
     
   def __init__(self, name):
     self.nodetype = 'enum'
@@ -69,18 +85,31 @@ class EnumNode(Node):
 
 
 class StructNode(Node):
+  """
+  name - string
+  baseName - string or None
+  variables - dict of name:variableNode
+    name - string
+    variableNode - StructVariableNode
+  """
 
   def __init__(self, name, baseName):
     self.nodetype = 'struct'
     self.name = name
     self.baseName = baseName
     self.variables = {}
-    self.functions = {}
 
   def addVariable(self, variable):
     self.variables[variable.name] = variable
 
 class StructVariableNode(Node):
+  """
+  decltype - tokens
+  name - string
+  inits - dict of name:node
+    name - string
+    node - node, must be ValueNode
+  """
 
   def __init__(self, decltype, name):
     self.nodetype = 'struct_variable'
@@ -93,6 +122,17 @@ class StructVariableNode(Node):
     self.inits[name] = body
 
 class ClassNode(Node):
+  """
+  name - string
+  baseName - string or None
+  constructor - FunctionNode or None
+  variables - dict of name:variableNode
+    name - string
+    variableNode - VariableNode
+  functions - dict of name:functionNode
+    name - string
+    functionNode - FunctionNode
+  """
 
   def __init__(self, name, baseName):
     self.nodetype = 'class'
@@ -112,6 +152,13 @@ class ClassNode(Node):
     self.functions[function.name] = function
 
 class InsertNode(Node):
+  """
+  collName - string
+  value - ValueNode
+  isAfter - bool type
+  isBefore - bool type
+  where - expr, FunctionCallNode
+  """
 
   def __init__(self, collName):
     self.nodetype = 'insert'
@@ -136,12 +183,19 @@ class InsertNode(Node):
     self.where = where
 
 class SelectCountNode(Node):
+  """
+  collName - string
+  """
 
   def __init__(self, collName):
     self.nodetype = 'select_count'
     self.collName = collName
 
 class SelectOneNode(Node):
+  """
+  collName - string
+  where - expr, FunctionCallNode
+  """
 
   def __init__(self, collName):
     self.nodetype = 'select_one'
@@ -152,6 +206,12 @@ class SelectOneNode(Node):
     self.where = where
 
 class SelectFromNode(Node):
+  """
+  collName - string
+  where - expr, FunctionCallNode
+  orderField - string
+  sortOrder - string, asc|desc
+  """
 
   def __init__(self, collName):
     self.nodetype = 'select_from'
@@ -168,6 +228,9 @@ class SelectFromNode(Node):
     self.sortOrder = sortOrder
 
 class SelectConcatNode(Node):
+  """
+  collections - array of string
+  """
   
   def __init__(self):
     self.nodetype = 'select_concat'
@@ -176,7 +239,25 @@ class SelectConcatNode(Node):
   def addCollection(self, collection):
     self.collections.append(collection)
 
+class SelectSumNode(Node):
+  """
+  collName - string
+  by - string
+  """
+
+  def __init__(self, collName, by):
+    self.nodetype = 'select_sum'
+    self.collName = collName
+    self.by = by
+
 class UpdateNode(Node):
+  """
+  collName - string
+  items - dict of name:expr
+    name - string
+    expr - ValueNode
+  where - FunctionCallNode
+  """
 
   def __init__(self, collName):
     self.nodetype = 'update'
@@ -191,6 +272,10 @@ class UpdateNode(Node):
     self.where = where
 
 class DeleteFromNode(Node):
+  """
+  collName - string
+  where - FunctionCallNode
+  """
 
   def __init__(self, collName):
     self.nodetype = 'delete_from'
@@ -201,6 +286,13 @@ class DeleteFromNode(Node):
     self.where = where
 
 class TagNode(Node):
+  """
+  name - string
+  attributes - dict of name:variable
+    name - string
+    variable - ValueNode
+  childs - array of TagNode, ValueNode, FunctionCallNode
+  """
 
   def __init__(self, name):
     self.nodetype = 'tag'
@@ -215,6 +307,11 @@ class TagNode(Node):
     self.childs.append(tag)
 
 class IfNode(Node):
+  """
+  expr - FunctionCallNode
+  body - nodes
+  elseBody - nodes
+  """
 
   def __init__(self):
     self.nodetype = 'if'
@@ -228,6 +325,9 @@ class ValueNode(Node):
   """
   Contains all values - literals, variables.
   This must looks like VariableNode, because this another representation.
+
+  value - string, variableNode.name but this may with prefix
+  body - any Node from variable body rule
   """
 
   def __init__(self, value):
@@ -245,6 +345,7 @@ class ValueNode(Node):
 class ArrayBodyNode(Node):
   """
   Contains array body ['item1', 'item2']
+  items - array of nodes, any Node from variable body rule
   """
 
   def __init__(self):
@@ -257,6 +358,8 @@ class ArrayBodyNode(Node):
 class ArrayValueNode(Node):
   """
   Represents values[index] value expression.
+  value - string
+  index - litint
   """
 
   def __init__(self, value, index):
@@ -267,6 +370,9 @@ class ArrayValueNode(Node):
 class DictBodyNode(Node):
   """
   Contains dict body {'key1': expr, 'key2': exp}
+  items - dict of name:expr
+    name - string
+    expr - any Node from variable body rule
   """
 
   def __init__(self):
@@ -279,6 +385,7 @@ class DictBodyNode(Node):
 class ReturnNode(Node):
   """
   Function return node
+  body - any Node from variable body rule
   """
 
   def __init__(self):
@@ -289,11 +396,26 @@ class ReturnNode(Node):
     self.body = node
 
 class FunctionCallNode(Node):
+  """
+  name - string
+    for constructor is class name
+  params - nodes
+    for constructor is empty
+  inits - use for constructor only, dict of name:node
+    name - string
+    node - node
+  """
   
   def __init__(self, name):
     self.name = name
     self.nodetype = 'functioncall'
     self.params = []
+    self.inits = {}
 
   def addParameter(self, node):
     self.params.append(node)
+
+  def addInit(self, name, body):
+    self.inits[name] = body
+
+

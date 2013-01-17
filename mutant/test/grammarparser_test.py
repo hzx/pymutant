@@ -50,9 +50,9 @@ class GrammarParserTest(unittest.TestCase):
     self.assertEqual(altNode.childs[0].value, 'var')
     self.assertEqual(altNode.childs[1].name, 'type')
 
-    self.assertEqual(nameNode.name, 'name')
-    self.assertEqual(len(nameNode.childs), 1)
-    self.assertEqual(nameNode.childs[0].value, 'name')
+    # self.assertEqual(nameNode.name, 'name')
+    # self.assertEqual(len(nameNode.childs), 1)
+    # self.assertEqual(nameNode.childs[0].value, 'name')
 
   def testType(self):
     expected = mt.ParamNode('type')

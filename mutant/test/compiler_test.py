@@ -122,7 +122,6 @@ class CompilerTest(unittest.TestCase):
     self.assertEqual(st.name, 'User')
     self.assertIsNone(st.baseName)
     self.assertEqual(len(st.variables), 0)
-    self.assertEqual(len(st.functions), 0)
 
   # def testStructBody(self):
   #   self.fail('not implemented')
