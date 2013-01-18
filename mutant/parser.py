@@ -1517,7 +1517,7 @@ class Parser(object):
       createNode.addParameter(rightParam)
     else:
       # we have value node
-      value = source.tokens[match.leftIndex]
+      value = source.tokens[match.leftIndex].word
       createNode = core.ValueNode(value)
 
     if createNode == None:
