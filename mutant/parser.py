@@ -1034,6 +1034,7 @@ class Parser(object):
     """
     name = match.params['name']
     value = core.ValueNode(name)
+    value.isName = True
 
     self.runHandlers(value, match.handlers, source)
 
@@ -1517,8 +1518,22 @@ class Parser(object):
       createNode.addParameter(rightParam)
     else:
       # we have value node
-      value = source.tokens[match.leftIndex].word
-      createNode = core.ValueNode(value)
+      leftToken = source.tokens[match.leftIndex]
+      createNode = core.ValueNode(leftToken.word)
+      wt = leftToken.wordtype
+      # set value flag type
+      if wt == grammar.LITBOOL_TYPE:
+        createNode.isLitBool = True
+      elif wt == grammar.LITINT_TYPE:
+        createNode.isLitInt = True
+      elif wt == grammar.LITFLOAT_TYPE:
+        createNode.isLitFloat = True
+      elif wt == grammar.LITSTRING_TYPE:
+        createNode.isLitString = True
+      elif wt == grammar.NAME_TYPE:
+        createNode.isName = True
+      else:
+        raise Exception('unknown wordtype for ValueNode, actual "%s", source "%s"' % (wt, source.filename))
 
     if createNode == None:
       raise Exception('created node in expression is None, source "%s"' % source.filename)

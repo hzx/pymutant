@@ -48,6 +48,10 @@ class Compiler(object):
       self.lexer.parse(module)
       self.parser.parse(module)
 
+    # check and set functioncall as constructor
+    for name, module in self.loader.modules.items():
+      self.markConstructors(module)
+
     # check and add module to cache
     for name, module in self.loader.modules.items():
       self.checker.check(module)
@@ -96,6 +100,19 @@ class Compiler(object):
       cl = self.clearClass(node)
       cleared.classes[cl.name] = cl
 
+  def markConstructors(self, module):
+    """
+    Find and mark constructor among functioncall nodes
+    """
+    # find in variables body
+    # find in class variables body
+    # find in class functions variables body
+    # find in class functions return body
+
+  def isClassName(self, module):
+    """
+    Find name among struct and class names, and aliased modules
+    """
 
   def clearVariable(self, var):
     pass

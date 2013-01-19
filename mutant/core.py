@@ -328,6 +328,7 @@ class ValueNode(Node):
 
   value - string, variableNode.name but this may with prefix
   body - any Node from variable body rule
+  isLitBool, isLitInt, isLitFloat, isLitString, isName - only one flag must be True
   """
 
   def __init__(self, value):
@@ -335,6 +336,11 @@ class ValueNode(Node):
     self.value = value
     self.body = None
     self.bodyReactive = False
+    self.isLitBool = False
+    self.isLitInt = False
+    self.isLitFloat = False
+    self.isLitString = False
+    self.isName = False
 
   def setBody(self, node):
     self.body = node
@@ -411,6 +417,8 @@ class FunctionCallNode(Node):
     self.nodetype = 'functioncall'
     self.params = []
     self.inits = {}
+
+    self.isConstructorCall = False
 
   def addParameter(self, node):
     self.params.append(node)

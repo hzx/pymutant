@@ -35,7 +35,7 @@ class CompilerTest(unittest.TestCase):
     self.assertEqual(var.name, 'num')
     self.assertIsNotNone(var.body)
     self.assertEqual(var.body.nodetype, 'value')
-    self.assertEqual(var.body.value.word, '4')
+    self.assertEqual(var.body.value, '4')
 
   def testVariableBody(self):
     module = self.compiler.compile(self.paths, 'varbody')
@@ -43,8 +43,8 @@ class CompilerTest(unittest.TestCase):
     vb = var.body
     self.assertIsNotNone(vb)
     self.assertEqual(vb.nodetype, 'value')
-    self.assertEqual(vb.value.word, '4')
-    self.assertEqual(vb.value.wordtype, 'litint')
+    self.assertEqual(vb.value, '4')
+    self.assertEqual(vb.isLitInt, True)
 
   def testVariableBodyFunctionParams(self):
     module = self.compiler.compile(self.paths, 'varbodyfuncparams')
@@ -182,9 +182,9 @@ class CompilerTest(unittest.TestCase):
     self.assertEqual(vsb.nodetype, 'dict_body')
     self.assertEqual(len(vsb.items), 2)
     self.assertTrue("'padding'" in vsb.items)
-    self.assertEqual(vsb.items["'padding'"].value.word, "'0 16px'")
+    self.assertEqual(vsb.items["'padding'"].value, "'0 16px'")
     self.assertTrue("'position'" in vsb.items)
-    self.assertEqual(vsb.items["'position'"].value.word, "'absolute'")
+    self.assertEqual(vsb.items["'position'"].value, "'absolute'")
 
     # tag
 
@@ -208,11 +208,11 @@ class CompilerTest(unittest.TestCase):
     self.assertEqual(classAttr.nodetype, 'array_body')
     self.assertEqual(len(classAttr.items), 2)
     self.assertEqual(classAttr.items[0].nodetype, 'value')
-    self.assertEqual(classAttr.items[0].value.wordtype, 'litstring')
-    self.assertEqual(classAttr.items[0].value.word, "'common-content'")
+    self.assertEqual(classAttr.items[0].isLitString, True)
+    self.assertEqual(classAttr.items[0].value, "'common-content'")
     self.assertEqual(classAttr.items[1].nodetype, 'value')
-    self.assertEqual(classAttr.items[1].value.wordtype, 'litstring')
-    self.assertEqual(classAttr.items[1].value.word, "'main-content'")
+    self.assertEqual(classAttr.items[1].isLitString, True)
+    self.assertEqual(classAttr.items[1].value, "'main-content'")
 
     # select from
     sf = module.variables.get('selectFrom', None)
@@ -257,7 +257,7 @@ class CompilerTest(unittest.TestCase):
     self.assertEqual(len(stuId.inits), 1)
     self.assertIsNotNone(stuId.inits.get("'validate'", None))
     self.assertEqual(stuId.inits["'validate'"].nodetype, 'value')
-    self.assertEqual(stuId.inits["'validate'"].value.word, 'wender.validateLength')
+    self.assertEqual(stuId.inits["'validate'"].value, 'wender.validateLength')
     stuUsername = structUser.variables.get('username', None)
     self.assertIsNotNone(stuUsername)
     self.assertEqual(stuUsername.nodetype, 'struct_variable')
