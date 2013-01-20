@@ -43,7 +43,7 @@ class FunctionNode(Node):
     for constructor it None
   decltype - tokens
     for constructor it None
-  params - dict of name:type
+  params - array of array of name,type
     name - string
     type - tokens
   bodyNodes - nodes
@@ -53,7 +53,7 @@ class FunctionNode(Node):
     self.nodetype = 'function'
     self.decltype = decltype
     self.name = name
-    self.params = {}
+    self.params = []
     self.bodyNodes = []
 
   def addParameter(self, name, decltype):
@@ -61,7 +61,7 @@ class FunctionNode(Node):
     params:
       param - Param type
     """
-    self.params[name] = decltype
+    self.params.append([name, decltype])
 
   def addBodyNode(self, node):
     self.bodyNodes.append(node)

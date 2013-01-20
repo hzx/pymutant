@@ -7,6 +7,8 @@ class CoffeeFormatter(object):
 
   def __init__(self):
     self.indent = 0
+    # cache formatted modules code
+    self.cache = {}
 
   def format(self, nodes):
     pass
@@ -15,17 +17,19 @@ class CoffeeFormatter(object):
     """
     Generate module code, and all imported.
     """
-    self.code = ''
-    self.genModule(module)
-    return self.code
+    return self.genModule(module)
 
   def genModule(self, module):
+    if self.cache.has_key(module.name):
+      return self.cache[module.name]
+  
     code = ''
 
     # add global namespace
-    ns = core.VariableNode([common.Token(0, 'var', 'var')], 'window.' + module.name)
-    ns.body = core.DictBodyNode()
-    code = self.genVariableCode(ns, isGlobal=True)
+    code = '%s = {}\nwindow.%s = %s\n' % (module.name, module.name, module.name)
+    # ns = core.VariableNode([common.Token(0, 'var', 'var')], 'window.' + module.name)
+    # ns.body = core.DictBodyNode()
+    # code = self.genVariableCode(ns, isGlobal=True)
 
     # variables
     for name, va in module.variables.items():
@@ -37,13 +41,85 @@ class CoffeeFormatter(object):
       res = self.genFunctionCode(fn, isGlobal=True)
       code = code + res + '\n'
 
+    # TODO(dem) make more smart sort - if class use another class - move to top
+
+    sortedClasses = self.sortClasses(module)
+
     # classes
-    for name, cl in module.classes.items():
+    for cl in sortedClasses:
       res = self.genClassCode(cl)
       code = code + res + '\n'
 
-    self.code = self.code + code
-    return self.code
+    # add module code to cache
+    self.cache[module.name] = code
+
+    # gen imported modules
+    modcodes = []
+    for name, mod in module.modules.items():
+      modcode = self.genModule(mod)
+      modcodes.append(modcode)
+    # add module code before, add namespaces to end
+    code = ''.join(modcodes) + code + self.genNamespaces(module)
+
+    return code
+
+  def sortClasses(self, module):
+    # super classes move to top
+    superClassNames = []
+    for name, cl in module.classes.items():
+      if cl.baseName in module.classes:
+        superClassNames.append(cl.baseName)
+    superClasses = []
+    otherClasses = []
+    for name, cl in module.classes.items():
+      if cl.name in superClassNames:
+        superClasses.append(cl)
+      else:
+        otherClasses.append(cl)
+
+    buf = [cl for name, cl in module.classes.items()]
+    out = []
+
+    while (len(buf) > 0):
+      # searcch super classes name
+      superClassNames = []
+      for cl in buf:
+        if cl.baseName in module.classes:
+          superClassNames.append(cl.baseName)
+      # divide super classes and other classes
+      superClasses = []
+      otherClasses = []
+      for cl in buf:
+        if cl.name in superClassNames:
+          superClasses.append(cl)
+        else:
+          otherClasses.append(cl)
+      # flush otherClasses to out buffer
+      out = otherClasses + out
+      # switch buf to superClasses
+      buf = superClasses
+
+    return out
+
+
+  def genNamespaces(self, module):
+    code = ''
+    items = []
+    # add namespaces for variables
+    for name, va in module.variables.items():
+      items.append('%s.%s = %s' % (module.name, va.name, va.name))
+    
+    # add namspaces for functions
+    for name, fn in module.functions.items():
+      items.append('%s.%s = %s' % (module.name, fn.name, fn.name))
+
+    # add namespaces for classes
+    for name, cl in module.classes.items():
+      items.append('%s.%s = %s' % (module.name, cl.name, cl.name))
+
+    code = '\n'.join(items) + '\n'
+
+    return code
 
   def incIndent(self):
     self.indent = self.indent + 2
@@ -72,6 +148,8 @@ class CoffeeFormatter(object):
         par = par + self.genVarBodyCode(param)
         notFirst = True
       code = '%s(%s)' % (node.name, par)
+      if node.isConstructorCall:
+        code = 'new ' + code
     elif node.nodetype == 'array_body':
       itcode = ''
       notFirst = False
@@ -106,7 +184,7 @@ class CoffeeFormatter(object):
     code = self.getIndent()
     paramcode = ''
     notFirst = False
-    for name, param in fn.params.items():
+    for name, param in fn.params:
       if notFirst: paramcode = paramcode + ', '
       paramcode = paramcode + name
       notFirst = True
@@ -199,12 +277,14 @@ class CoffeeFormatter(object):
     # function call
     # create params code
     par = ''
+    prefix = ''
+    if fc.isConstructorCall: prefix = 'new '
     notFirst = False
     for param in fc.params:
       if notFirst: par = par + ', '
       par = par + self.genExprCode(param)
       notFirst = True
-    return '%s(%s)' % (fc.name, par)
+    return '%s%s(%s)' % (prefix, fc.name, par)
 
   def genArrayBodyCode(self, ab):
     itcode = ''

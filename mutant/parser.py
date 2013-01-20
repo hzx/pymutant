@@ -1533,7 +1533,9 @@ class Parser(object):
       elif wt == grammar.NAME_TYPE:
         createNode.isName = True
       else:
-        raise Exception('unknown wordtype for ValueNode, actual "%s", source "%s"' % (wt, source.filename))
+        # raise Exception('unknown wordtype for ValueNode, actual "%s", source "%s"' % (wt, source.filename))
+        # exists asc|desc, none
+        pass
 
     if createNode == None:
       raise Exception('created node in expression is None, source "%s"' % source.filename)

@@ -34,7 +34,7 @@ class Module(object):
     self.sources = sources
 
     self.modules = {}
-    self.aliasModules = {}
+    # self.aliasModules = {}
     self.variables = {}
     self.functions = {}
     self.enums = {}

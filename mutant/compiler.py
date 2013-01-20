@@ -4,6 +4,7 @@ from mutant.lexer import Lexer
 from mutant.parser import Parser
 from mutant.checker import Checker
 from mutant.generators import GenFactory
+import re
 
 
 class Compiler(object):
@@ -21,6 +22,8 @@ class Compiler(object):
     self.grammarParser.compileGrammar()
 
     self.compiledModules = {}
+
+    self.dotre = re.compile('\.')
 
   def compile(self, srcPaths, moduleName):
     """
@@ -72,60 +75,72 @@ class Compiler(object):
     with open(filename, 'w') as f:
       f.writelines(lines)
 
-  def clearModule(self, module):
-    cleared = common.Module(module.name, [])
-
-    # variables
-    for key, node in module.variables.items():
-      var = self.clearVariable(node)
-      cleared.variables[var.name] = var
-
-    # functions
-    for key, node in module.functions.items():
-      func = self.clearFunction(node)
-      cleared.functions[func.name] = func
-
-    # enums
-    for key, node in module.enums.items():
-      en = self.clearEnum(node)
-      cleared.enums[en.name] = en
-
-    # structs
-    for key, node in module.classes.items():
-      st = self.clearStruct(node)
-      cleared.structs[st.name] = st
-
-    # classes
-    for key, node in module.classes.items():
-      cl = self.clearClass(node)
-      cleared.classes[cl.name] = cl
-
   def markConstructors(self, module):
     """
     Find and mark constructor among functioncall nodes
     """
     # find in variables body
-    # find in class variables body
-    # find in class functions variables body
-    # find in class functions return body
+    for name, va in module.variables.items():
+      self.markConstructorInVariable(module, va)
 
-  def isClassName(self, module):
+    # find in functions
+    for name, fn in module.functions.items():
+      self.markConstructorInNodes(module, fn.bodyNodes)
+
+    for cn, cl in module.classes.items():
+      # find in class variables body
+      for name, va in cl.variables.items():
+        self.markConstructorInVariable(module, va)
+
+      # find in class functions variables body
+      for name, fn in cl.functions.items():
+        self.markConstructorInNodes(module, fn.bodyNodes)
+
+  def markConstructorInVariable(self, module, va):
+    if va.body and (va.body.nodetype == 'functioncall'):
+      self.markConstructorFunctioncall(module, va.body)
+
+  def markConstructorFunctioncall(self, module, fc):
+    if self.isClassName(module, fc.name):
+      fc.isConstructorCall = True
+    # mark constructor in params
+    for node in fc.params:
+      if node.nodetype == 'functioncall':
+        self.markConstructorFunctioncall(module, node)
+
+  def markConstructorInNodes(self, module, nodes):
+    for node in nodes:
+      if (node.nodetype == 'variable') and node.body:
+        if node.body.nodetype == 'functioncall':
+          self.markConstructorFunctioncall(module, node.body)
+      elif (node.nodetype == 'value') and node.body and (node.body.nodetype == 'functioncall'):
+        self.markConstructorFunctioncall(module, node.body)
+      elif node.nodetype == 'return':
+        if node.body.nodetype == 'functioncall':
+          self.markConstructorFunctioncall(module, node.body)
+      elif node.nodetype == 'if':
+        if node.body: self.markConstructorInNodes(module, node.body)
+        if node.elseBody: self.markConstructorInNodes(node.elseBody)
+
+  def isClassName(self, module, name):
     """
     Find name among struct and class names, and aliased modules
     """
-
-  def clearVariable(self, var):
-    pass
-
-  def clearFunction(self, func):
-    pass
-
-  def clearEnum(self, en):
-    pass
-
-  def clearStruct(self, st):
-    pass
-
-  def clearClass(self, cl):
-    pass
-
+    # search in classes
+    if module.classes.has_key(name):
+      return True
+    # check if name consistent
+    res = self.dotre.split(name)
+    if len(res) > 1:
+      moduleName = res[0]
+      className = res[1]
+      # search in modules
+      if module.modules.has_key(moduleName):
+        mod = module.modules[moduleName]
+        # search in module classes
+        # debug - search in module structs
+        if mod.structs.has_key(className):
+          return True
+        if mod.classes.has_key(className):
+          return True
+    return False
