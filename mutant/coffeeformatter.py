@@ -38,8 +38,13 @@ class CoffeeFormatter(object):
 
     # functions
     for name, fn in module.functions.items():
+      # skip main function, write last
+      if name == 'main': continue
       res = self.genFunctionCode(fn, isGlobal=True)
       code = code + res + '\n'
+    # write main function
+    if 'main' in module.functions:
+      code = code + self.genFunctionCode(module.functions['main'], isGlobal=True)
 
     # TODO(dem) make more smart sort - if class use another class - move to top
 

@@ -4,7 +4,7 @@ from mutant.lexer import Lexer
 from mutant.parser import Parser
 from mutant.checker import Checker
 from mutant.generators import GenFactory
-import re
+from mutant import common
 
 
 class Compiler(object):
@@ -22,8 +22,6 @@ class Compiler(object):
     self.grammarParser.compileGrammar()
 
     self.compiledModules = {}
-
-    self.dotre = re.compile('\.')
 
   def compile(self, srcPaths, moduleName):
     """
@@ -101,7 +99,7 @@ class Compiler(object):
       self.markConstructorFunctioncall(module, va.body)
 
   def markConstructorFunctioncall(self, module, fc):
-    if self.isClassName(module, fc.name):
+    if common.isClassName(module, fc.name):
       fc.isConstructorCall = True
     # mark constructor in params
     for node in fc.params:
@@ -122,25 +120,3 @@ class Compiler(object):
         if node.body: self.markConstructorInNodes(module, node.body)
         if node.elseBody: self.markConstructorInNodes(node.elseBody)
 
-  def isClassName(self, module, name):
-    """
-    Find name among struct and class names, and aliased modules
-    """
-    # search in classes
-    if module.classes.has_key(name):
-      return True
-    # check if name consistent
-    res = self.dotre.split(name)
-    if len(res) > 1:
-      moduleName = res[0]
-      className = res[1]
-      # search in modules
-      if module.modules.has_key(moduleName):
-        mod = module.modules[moduleName]
-        # search in module classes
-        # debug - search in module structs
-        if mod.structs.has_key(className):
-          return True
-        if mod.classes.has_key(className):
-          return True
-    return False
