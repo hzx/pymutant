@@ -66,6 +66,9 @@ class FunctionNode(Node):
   def addBodyNode(self, node):
     self.bodyNodes.append(node)
 
+  def addSupercallNode(self, node):
+    self.bodyNodes.insert(0, node)
+
 
 class EnumNode(Node):
   """
