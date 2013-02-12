@@ -1166,7 +1166,7 @@ class Parser(object):
         cursor = closedIndex + 1
         continue
       # add variable
-      if token.wordtype in ['name', 'litint', 'litfloat', 'litstring', 'litbool', 'none', 'asc', 'order']:
+      if token.wordtype in ['name', 'litint', 'litfloat', 'litstring', 'litbool', 'none', 'asc', 'order', 'after', 'before']:
         nodes.append({'kind': 'value', 'match': Match(cursor, cursor), 'weight': bracketWeight})
       # check bracket
       # set nodes additional weights

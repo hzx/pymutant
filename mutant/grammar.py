@@ -29,6 +29,8 @@ HTML_EVENTS = [
 
 ALPHA_RE = '[\ a-zA-Z0-9_\(\)\{\}\[\]\.\,\;\:\'\^\=\+\-\*/\\\?><#!%]'
 
+SIMPLE_TYPES = ['bool','int','float','string','datetime','tag','event', 'name']
+
 # Regexes
 
 NAME_RE = '(?:[_a-zA-Z][_a-zA-Z0-9]*[.]?)+'
@@ -54,8 +56,8 @@ rules = {
 
     'function_declaration': '{function_type} {function_params}! {function_body}!',
     'function_type': '<type>(void|{type})',
-    'function_name': '<name>(name)',
-    'function_param': '<type>(var|{type}) <name>(name|order)',
+    'function_name': '<name>(name|insert|select|concat|update|delete|count)',
+    'function_param': '<type>(var|{type}) <name>(name|order|after|before|count)',
     'function_return': 'return ({operator}!)?',
     'function_call': '<name>(name) (',
 

@@ -1,4 +1,5 @@
 import re
+from mutant import grammar
 
 
 def getTokensRange(leftIndex, rightIndex, tokens):
@@ -44,6 +45,21 @@ def isStructName(module, name):
       if mod.structs.has_key(structName):
         return True
   return False
+
+
+def isStructValueName(module, name):
+  """
+  Search first name and check it must be world
+  """
+  res = dore.split(name)
+  if len(res) == 1:
+    return False
+
+  moduleName = res[0]
+  if moduleName != 'world':
+    return False
+
+
 
 
 def getOnlyName(name):
