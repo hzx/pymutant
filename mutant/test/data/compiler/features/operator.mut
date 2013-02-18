@@ -8,4 +8,7 @@ void oper() {
   if (val1 isnot false) and (val2 isnot false) {
     val3 = true;
   }
+  for val in values {
+    val = val + 'end.';
+  }
 }

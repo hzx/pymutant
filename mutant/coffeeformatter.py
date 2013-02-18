@@ -232,6 +232,8 @@ class CoffeeFormatter(object):
         code = code + self.getIndent() + 'return ' + self.genExprCode(node.body) + '\n'
       elif node.nodetype == 'if':
         code = code + self.genIfCode(node) + '\n'
+      elif node.nodetype == 'for':
+        code = code + self.genForCode(node) + '\n'
 
     return code
 
@@ -351,5 +353,16 @@ class CoffeeFormatter(object):
       code = code + self.genFunctionBodyCode(ifn.elseBody)
 
       self.decIndent()
+
+    return code
+
+  def genForCode(self, forn):
+    code =  '%sfor %s in %s\n' % (self.getIndent(), forn.itemName, forn.collName)
+
+    self.incIndent()
+
+    code = code + self.genFunctionBodyCode(forn.body)
+
+    self.decIndent()
 
     return code

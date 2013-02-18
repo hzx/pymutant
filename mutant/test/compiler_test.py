@@ -283,6 +283,8 @@ class CompilerTest(unittest.TestCase):
     self.assertEqual(fnOper.bodyNodes[2].nodetype, 'variable')
     self.assertEqual(fnOper.bodyNodes[3].nodetype, 'variable')
 
+    # test if
+
     ifnode = fnOper.bodyNodes[4]
     self.assertEqual(ifnode.nodetype, 'if')
     ifexpr = ifnode.expr
@@ -306,3 +308,10 @@ class CompilerTest(unittest.TestCase):
     self.assertEqual(expr2.params[1].nodetype, 'value')
     self.assertEqual(expr2.params[1].value, 'false')
 
+    # test for
+
+    fornode = fnOper.bodyNodes[5]
+    self.assertEqual(fornode.nodetype, 'for')
+    self.assertIsNotNone(fornode.collName)
+    self.assertIsNotNone(fornode.itemName)
+    self.assertNotEqual(len(fornode.body), 0)

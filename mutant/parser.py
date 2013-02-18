@@ -187,6 +187,12 @@ class Parser(object):
     grammar.setHandler('parseIfBody', self.parseIfBody)
     grammar.setHandler('parseElseBody', self.parseElseBody)
 
+    grammar.setHandler('for', self.createFor)
+    grammar.setHandler('iteration_body', self.matchIterationBody)
+    grammar.setHandler('parseIterationBody', self.parseIterationBody)
+    grammar.setHandler('for_body', self.matchForBody)
+    grammar.setHandler('parseForBody', self.parseForBody)
+
     grammar.setHandler('operator', self.handleOperator)
 
     # bind parsers
@@ -713,6 +719,66 @@ class Parser(object):
     nodes = self.parseByRules(grammar.function_body_rules, left, right, source)
 
     ifNode.elseBody = nodes
+
+  def createFor(self, match, source):
+    """
+    Create core.ForNode.
+    """
+    node = core.ForNode()
+    self.runHandlers(node, match.handlers, source)
+    return node
+
+  def matchIterationBody(self, left, right, source):
+    bracket = findWordIndex('{', left, right, source.tokens)
+    if bracket < 0: return None
+
+    endIndex = bracket - 1
+
+    match = Match(left, endIndex)
+    match.handlers['parseIterationBody'] = Match(left, endIndex)
+
+    return match
+
+  def parseIterationBody(self, forNode, left, right, source):
+    # check min tokens count
+    leftToken = source.tokens[left]
+    if right - left < 2:
+      raise Exception('for iteration body must have 3 tokens, linenum, "%d", source "%s"' % (leftToken.linenum, source.filename))
+
+    # check "in" token
+    inToken = source.tokens[right-1]
+    if inToken.word != 'in':
+      raise Exception('for iteration body not have "in" keyword, linenum, "%d", source "%s"' % (inToken.linenum, source.filename))
+
+    rightToken = source.tokens[right]
+
+    # save itemName, collName
+    itemName = leftToken.word
+    collName = rightToken.word
+
+    forNode.itemName = itemName
+    forNode.collName = collName
+
+
+  def matchForBody(self, left, right, source):
+    leftToken = source.tokens[left]
+    if leftToken.word != '{': return None
+
+    bracketCounter = BracketCounter()
+    endIndex = bracketCounter.findPair(left, right, source.tokens)
+    if endIndex < 0: return None
+
+    match = Match(left, endIndex)
+    match.handlers['parseForBody'] = Match(left+1, endIndex-1)
+
+    return match
+
+  def parseForBody(self, forNode, left, right, source):
+    if right - left <= 1: return
+
+    nodes = self.parseByRules(grammar.function_body_rules, left, right, source)
+
+    forNode.body = nodes
 
   def findCloseTag(self, name, leftIndex, rightIndex, source):
     """
@@ -1512,7 +1578,6 @@ class Parser(object):
       createNode.addParameter(paramNode)
     elif kind in grammar.binaryFunctions:
       createNode = core.FunctionCallNode(kind)
-      # leftParam = self.createExpressionTree(minIndex - 1, leftIndex, nodes, source)
       leftParam = self.createExpressionTree(leftIndex, minIndex - 1, nodes, source)
       rightParam = self.createExpressionTree(minIndex + 1, rightIndex, nodes, source)
       createNode.addParameter(leftParam)

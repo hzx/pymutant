@@ -322,6 +322,16 @@ class IfNode(Node):
     self.body = []
     self.elseBody = []
 
+class ForNode(Node):
+  """
+  """
+
+  def __init__(self):
+    self.nodetype = 'for'
+    self.collName = None
+    self.itemName = None
+    self.body = []
+
 # for calculations
 
 class ValueNode(Node):
