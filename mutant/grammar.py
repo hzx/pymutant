@@ -10,17 +10,17 @@ SYMBOL_TOKENS = [
 
 SYSTEM_TOKENS = [
     'define', 'import', 'extern', 'return', 'as',
-    'void', 'var', 'bool', 'int', 'float', 'string', 'tag', 'event',
+    'void', 'var', 'bool', 'int', 'float', 'string', 'tag', 'event', 'object', 'robject',
     'true', 'false', 'return', 'none',
     'static', 'interface', 'class', 'struct', 'enum', 'optional', 'extends',
     'implements', 'this',
-    'if', 'else',
+    'if', 'else', 'for',
     'insert', 'select', 'concat', 'update', 'delete', 'count', 'one', 'value', 'set', 'from', 'where', 'and', 'or', 'is', 'isnot', 'in', 'not', 'order', 'by', 'before', 'after', 'asc', 'desc',
     'map', 'reduce', 'sum',
     ]
 
 HTML_TAGS = [
-    'div', 'span', 'p', 'h1', 'h2', 'h3', 'ul', 'ol', 'li',
+    'div', 'span', 'p', 'img', 'a', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'input', 'textarea', 'strong', 'ul', 'ol', 'li', 'tr', 'th', 'td'
     ]
 
 HTML_EVENTS = [
@@ -29,7 +29,7 @@ HTML_EVENTS = [
 
 ALPHA_RE = '[\ a-zA-Z0-9_\(\)\{\}\[\]\.\,\;\:\'\^\=\+\-\*/\\\?><#!%]'
 
-SIMPLE_TYPES = ['bool','int','float','string','datetime','tag','event', 'name']
+SIMPLE_TYPES = ['bool','int','float','string','datetime','tag','event', 'name', 'object', 'robject']
 
 # Regexes
 
@@ -48,7 +48,7 @@ LITBOOL_TYPE = 'litbool'
 rules = {
     'import': 'import <module>(name) as <alias>(name) ;',
     'define': 'define <alias>(name) {define_body}!',
-    'variable': '<type>(var|{type}) <name>(name|order) {variable_body}!',
+    'variable': '<type>(var|{type}) <name>(name|order|event|class) {variable_body}!',
     'function': '{function_type} ({function_name})? {function_params}! {function_body}!',
     'enum': 'enum <name>(name) {enum_body}!',
     'struct': 'struct <name>(name) ({struct_extends})? {struct_body}!',
@@ -57,14 +57,15 @@ rules = {
     'function_declaration': '{function_type} {function_params}! {function_body}!',
     'function_type': '<type>(void|{type})',
     'function_name': '<name>(name|insert|select|concat|update|delete|count)',
-    'function_param': '<type>(var|{type}) <name>(name|order|after|before|count)',
+    'function_param': '<type>(var|{type}) <name>(name|order|after|before|count|event)',
     'function_return': 'return ({operator}!)?',
     'function_call': '<name>(name) (',
 
     'struct_variable': '<type>({type}) <name>(name) {constructor_init}!',
 
     # 'constructor': '({function_params})! {function_body}!',
-    'constructor': '( ) {function_body}!',
+    # 'constructor': '( ) {function_body}!',
+    'constructor': '{function_params}! {function_body}!',
     'constructor_call': '<name>(name) ( ) {constructor_init}!',
 
     'variable_assign': '{match_variable_assign}!',
@@ -74,7 +75,7 @@ rules = {
     'class_extends': 'extends <base_name>(name|tag)',
     'order_by': '<order_field>(name)',
 
-    'simple_type': 'bool|int|float|string|datetime|tag|event|name',
+    'simple_type': 'bool|int|float|string|datetime|tag|event|name|object|robject',
     'array_type': '{simple_type} [ ]',
     'dict_type': '{ {simple_type} : {simple_type} }',
     'type': '{dict_type}|{array_type}|{simple_type}',
@@ -103,6 +104,7 @@ rules = {
     # 'tagattrs': '',
 
     'if': 'if {if_body}!',
+    'for': 'for {iteration_body}! {for_body}!',
     }
 
 unaryFunctions = ['not']

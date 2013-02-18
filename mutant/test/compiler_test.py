@@ -272,3 +272,37 @@ class CompilerTest(unittest.TestCase):
     self.assertEqual(classCountManager.name, 'CountManager')
 
     self.assertEqual(classCountManager.baseName, 'BaseManager')
+
+    # test operator
+
+    fnOper = module.functions.get('oper', None)
+  
+    self.assertIsNotNone(fnOper)
+    self.assertEqual(fnOper.bodyNodes[0].nodetype, 'variable')
+    self.assertEqual(fnOper.bodyNodes[1].nodetype, 'variable')
+    self.assertEqual(fnOper.bodyNodes[2].nodetype, 'variable')
+    self.assertEqual(fnOper.bodyNodes[3].nodetype, 'variable')
+
+    ifnode = fnOper.bodyNodes[4]
+    self.assertEqual(ifnode.nodetype, 'if')
+    ifexpr = ifnode.expr
+    self.assertEqual(ifexpr.nodetype, 'functioncall')
+    self.assertEqual(ifexpr.name, 'and')
+    self.assertEqual(len(ifexpr.params), 2)
+    expr1 = ifexpr.params[0]
+    expr2 = ifexpr.params[1]
+
+    self.assertEqual(expr1.nodetype, 'functioncall')
+    self.assertEqual(len(expr1.params), 2)
+    self.assertEqual(expr1.params[0].nodetype, 'value')
+    self.assertEqual(expr1.params[0].value, 'val1')
+    self.assertEqual(expr1.params[1].nodetype, 'value')
+    self.assertEqual(expr1.params[1].value, 'false')
+
+    self.assertEqual(expr2.nodetype, 'functioncall', expr2.name)
+    self.assertEqual(len(expr2.params), 2)
+    self.assertEqual(expr2.params[0].nodetype, 'value')
+    self.assertEqual(expr2.params[0].value, 'val2')
+    self.assertEqual(expr2.params[1].nodetype, 'value')
+    self.assertEqual(expr2.params[1].value, 'false')
+

@@ -1,0 +1,11 @@
+
+
+void oper() {
+  bool val1 = true;
+  bool val2 = true;
+  bool val3 = false;
+  string[] values = ['str1', 'str2', 'str3'];
+  if (val1 isnot false) and (val2 isnot false) {
+    val3 = true;
+  }
+}

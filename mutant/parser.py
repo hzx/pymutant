@@ -1512,7 +1512,8 @@ class Parser(object):
       createNode.addParameter(paramNode)
     elif kind in grammar.binaryFunctions:
       createNode = core.FunctionCallNode(kind)
-      leftParam = self.createExpressionTree(minIndex - 1, leftIndex, nodes, source)
+      # leftParam = self.createExpressionTree(minIndex - 1, leftIndex, nodes, source)
+      leftParam = self.createExpressionTree(leftIndex, minIndex - 1, nodes, source)
       rightParam = self.createExpressionTree(minIndex + 1, rightIndex, nodes, source)
       createNode.addParameter(leftParam)
       createNode.addParameter(rightParam)
