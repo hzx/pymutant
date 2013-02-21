@@ -22,11 +22,17 @@ class CoffeeFormatter(object):
   def genModule(self, module):
     if self.cache.has_key(module.name):
       return self.cache[module.name]
+
+    self.module = module
   
     code = ''
 
+    # begin wrap function
+    code = code + self.getIndent() + '(->\n'
+    self.incIndent()
+
     # add global namespace
-    code = '%s = {}\nwindow.%s = %s\n' % (module.name, module.name, module.name)
+    code = code + '%s%s = {}\n%swindow.%s = %s\n' % (self.getIndent(), module.name, self.getIndent(), module.name, module.name)
     # ns = core.VariableNode([common.Token(0, 'var', 'var')], 'window.' + module.name)
     # ns.body = core.DictBodyNode()
     # code = self.genVariableCode(ns, isGlobal=True)
@@ -55,6 +61,14 @@ class CoffeeFormatter(object):
       res = self.genClassCode(cl)
       code = code + res + '\n'
 
+    # add namespaces
+    code = code + self.genNamespaces(module) + '\n'
+
+    # end wrap functions
+    self.decIndent()
+    code = code + self.getIndent() + ')()\n'
+
+
     # add module code to cache
     self.cache[module.name] = code
 
@@ -64,7 +78,7 @@ class CoffeeFormatter(object):
       modcode = self.genModule(mod)
       modcodes.append(modcode)
     # add module code before, add namespaces to end
-    code = ''.join(modcodes) + code + self.genNamespaces(module)
+    code = ''.join(modcodes) + code
 
     return code
 
@@ -112,15 +126,15 @@ class CoffeeFormatter(object):
     items = []
     # add namespaces for variables
     for name, va in module.variables.items():
-      items.append('%s.%s = %s' % (module.name, va.name, va.name))
+      items.append('%s%s.%s = %s' % (self.getIndent(), module.name, va.name, va.name))
     
     # add namspaces for functions
     for name, fn in module.functions.items():
-      items.append('%s.%s = %s' % (module.name, fn.name, fn.name))
+      items.append('%s%s.%s = %s' % (self.getIndent(), module.name, fn.name, fn.name))
 
     # add namespaces for classes
     for name, cl in module.classes.items():
-      items.append('%s.%s = %s' % (module.name, cl.name, cl.name))
+      items.append('%s%s.%s = %s' % (self.getIndent(), module.name, cl.name, cl.name))
 
     code = '\n'.join(items) + '\n'
 
@@ -238,7 +252,7 @@ class CoffeeFormatter(object):
     return code
 
   def genClassCode(self, cl):
-    code = 'class %s' % cl.name
+    code = '%sclass %s' % (self.getIndent(), cl.name)
     if cl.baseName:
       code = code + ' extends %s' % cl.baseName
     code = code + '\n'
@@ -265,6 +279,10 @@ class CoffeeFormatter(object):
     return code
 
   def genValueCode(self, va):
+    # debug
+    if va.body == None:
+      print 'module "%s", value "%s"' % (self.module.name, va.value)
+
     code = va.value + ' = ' + self.genVarBodyCode(va.body)
     return code
 
@@ -302,6 +320,9 @@ class CoffeeFormatter(object):
       notFirst = True
     return '[%s]' % (itcode)
 
+  def genArrayValueCode(self, av):
+    return '%s[%s]' % (av.value, str(av.index))
+
   def genDictBodyCode(self, db):
       bcode = ''
       notFirst = False
@@ -310,7 +331,6 @@ class CoffeeFormatter(object):
         bcode = bcode + name + ': ' + self.genExprCode(item)
         notFirst = True
       return '{%s}' % (bcode)
-
 
   def genExprCode(self, node):
     code = ''
@@ -329,6 +349,8 @@ class CoffeeFormatter(object):
       code = self.genFunctionCallCode(node)
     elif node.nodetype == 'array_body':
       code = self.genArrayBodyCode(node)
+    elif node.nodetype == 'array_value':
+      code = self.genArrayValueCode(node)
     elif node.nodetype == 'dict_body':
       code = self.genDictBodyCode(node)
 

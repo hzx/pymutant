@@ -154,6 +154,9 @@ class ClassNode(Node):
   def addFunction(self, function):
     self.functions[function.name] = function
 
+  def getVariablesName(self):
+    return ', '.join([vname for vname, va in self.variables.items()])
+
 class InsertNode(Node):
   """
   collName - string
