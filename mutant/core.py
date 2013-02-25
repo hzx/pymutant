@@ -34,7 +34,7 @@ class VariableNode(Node):
   def setBody(self, node):
     self.body = node
 
-  def setBodyReactive(isReactive):
+  def setBodyReactive(self, isReactive):
     self.bodyReactive = isReactive
 
 class FunctionNode(Node):
@@ -361,7 +361,7 @@ class ValueNode(Node):
   def setBody(self, node):
     self.body = node
 
-  def setBodyReactive(isReactive):
+  def setBodyReactive(self, isReactive):
     self.bodyReactive = isReactive
 
 class ArrayBodyNode(Node):

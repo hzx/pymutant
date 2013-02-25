@@ -10,8 +10,11 @@ class CoffeeFormatter(object):
     # cache formatted modules code
     self.cache = {}
 
-  def format(self, nodes):
-    pass
+    self.nodetypeToGen = {
+        # 'value': self.genValue,
+        # 'variable': self.genVariable,
+        # 'functioncall': self.genFunctionCall,
+      }
 
   def generate(self, module):
     """
@@ -31,11 +34,27 @@ class CoffeeFormatter(object):
     code = code + self.getIndent() + '(->\n'
     self.incIndent()
 
-    # add global namespace
+    # add imported modules as local variables
+    imported = []
+    for name, mod in module.modules.items():
+      imported.append('%s%s = window.%s\n' % (self.getIndent(), name, name))
+    code = code + ''.join(imported)
+
+    # add module global namespace
     code = code + '%s%s = {}\n%swindow.%s = %s\n' % (self.getIndent(), module.name, self.getIndent(), module.name, module.name)
+
     # ns = core.VariableNode([common.Token(0, 'var', 'var')], 'window.' + module.name)
     # ns.body = core.DictBodyNode()
     # code = self.genVariableCode(ns, isGlobal=True)
+
+    # TODO(dem) make more smart sort - if class use another class - move to top
+
+    sortedClasses = self.sortClasses(module)
+
+    # classes
+    for cl in sortedClasses:
+      res = self.genClassCode(cl)
+      code = code + res + '\n'
 
     # variables
     for name, va in module.variables.items():
@@ -52,15 +71,6 @@ class CoffeeFormatter(object):
     if 'main' in module.functions:
       code = code + self.genFunctionCode(module.functions['main'], isGlobal=True)
 
-    # TODO(dem) make more smart sort - if class use another class - move to top
-
-    sortedClasses = self.sortClasses(module)
-
-    # classes
-    for cl in sortedClasses:
-      res = self.genClassCode(cl)
-      code = code + res + '\n'
-
     # add namespaces
     code = code + self.genNamespaces(module) + '\n'
 
@@ -75,6 +85,7 @@ class CoffeeFormatter(object):
     # gen imported modules
     modcodes = []
     for name, mod in module.modules.items():
+      if mod == None: continue
       modcode = self.genModule(mod)
       modcodes.append(modcode)
     # add module code before, add namespaces to end

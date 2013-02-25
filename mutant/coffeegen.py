@@ -36,14 +36,17 @@ class CoffeeGen(object):
 
     # self.addNamespaces(module)
 
-    # add imported modules
-    for name, mod in module.modules.items():
-      va = core.VariableNode([common.Token(0, 'var', 'var')], name)
-      va.body = core.ValueNode('window.' + mod.name)
-      module.variables[va.name] = va
+    # MOVED TO FORMATTER
+    # add imported modules to window
+    # for name, mod in module.modules.items():
+    #   va = core.VariableNode([common.Token(0, 'var', 'var')], name)
+    #   va.body = core.ValueNode('window.' + mod.name)
+    #   module.variables[va.name] = va
 
     # generate imported modules
     for name, mod in module.modules.items():
+      # extern module have name and mod == None, skip it
+      if mod == None: continue
       self.generateModule(mod)
 
   def moveVariablesToConstructor(self, cl):

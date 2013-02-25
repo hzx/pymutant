@@ -15,7 +15,7 @@ class Loader(object):
 
   def __init__(self):
     # import regex
-    self.import_re = re.compile('^import\s+([a-zA-Z0-9\.]+)(?:\s+as\s+([a-zA-Z0-9]+))?$')
+    self.import_re = re.compile('^import\s+([a-zA-Z0-9_\.]+)(?:\s+as\s+([a-zA-Z0-9_]+))?$')
 
     # module maps by import name, need for cache
     self.modules = {}

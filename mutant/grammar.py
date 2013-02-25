@@ -30,6 +30,7 @@ HTML_EVENTS = [
 ALPHA_RE = '[\ a-zA-Z0-9_\(\)\{\}\[\]\.\,\;\:\'\^\=\+\-\*/\\\?><#!%]'
 
 SIMPLE_TYPES = ['bool','int','float','string','datetime','tag','event', 'name', 'object', 'robject']
+VALUE_TYPES = ['bool', 'int', 'float', 'string', 'datetime']
 
 # Regexes
 
@@ -51,6 +52,7 @@ rules = {
     'variable': '<type>(var|{type}) <name>(name|order|event|class) {variable_body}!',
     'function': '{function_type} ({function_name})? {function_params}! {function_body}!',
     'enum': 'enum <name>(name) {enum_body}!',
+    'interface': 'interface <name>(name) {interface_body}!',
     'struct': 'struct <name>(name) ({struct_extends})? {struct_body}!',
     'class': 'class <name>(name) ({class_extends})? {class_body}!',
 

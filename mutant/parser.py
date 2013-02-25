@@ -124,6 +124,7 @@ class Parser(object):
     Bind grammar.handlers map to self.handle*.
     """
     # bind global handlers
+    grammar.setHandler('import', self.createImport)
     grammar.setHandler('define', self.createDefine)
     grammar.setHandler('variable', self.createVariable)
     grammar.setHandler('function', self.createFunction)

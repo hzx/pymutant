@@ -5,6 +5,12 @@ from mutant import grammar
 def getTokensRange(leftIndex, rightIndex, tokens):
   return enumerate(tokens[leftIndex:rightIndex+1], leftIndex)
 
+def searchFunctionParamType(name, func):
+  for paramName, paramType in func.params:
+    if paramName == name:
+      return paramType
+  return None
+
 
 dotre = re.compile('\.')
 
