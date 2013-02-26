@@ -327,6 +327,9 @@ class IfNode(Node):
 
 class ForNode(Node):
   """
+  collName - string
+  itemName - string
+  body - node
   """
 
   def __init__(self):

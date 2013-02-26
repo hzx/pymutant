@@ -1,3 +1,6 @@
+import shutil
+import os.path
+import os
 
 
 class PyFormatter(object):
@@ -24,22 +27,15 @@ class PyFormatter(object):
         'isnot': '!='
       }
 
-  def generate(self, module):
+  def generate(self, dest, prefix, module):
     """
     Generate module code and all imported.
+    prefix - string, prefix to all imported modules if is mutant type.
+    module - entry point module, app.
     """
-    return self.genModule(module)
+    self.genModule(dest, prefix, module)
 
-  def incIndent(self):
-    self.indent = self.indent + 2
-
-  def decIndent(self):
-    self.indent = self.indent - 2
-
-  def getIndent(self):
-    return ''.rjust(self.indent, ' ')
-
-  def genModule(self, module):
+  def genModule(self, dest, prefix, module):
     """
     Generate module code and all imported modules.
     """
@@ -47,10 +43,6 @@ class PyFormatter(object):
       return self.cache[module.name]
 
     self.module = module
-
-    code = ''
-
-    raise Exception('not implemented')
 
     # generate classes
     classesCode = self.processClasses(module)
@@ -61,16 +53,38 @@ class PyFormatter(object):
     # generate variables
     variablesCode = self.processVariables(module)
 
-    # gen imported modules
-    modules = []
-    for name, mod in module.modules.items():
-      if mod == None: continue
-      modules.append(self.genModule(mod))
+    # generate imports
+    importsCode = self.processImports(prefix, module)
 
     # add modules code before to beginning
-    code = ''.join(modules) + classesCode + functionsCode + variablesCode
+    code = importsCode + classesCode + functionsCode + variablesCode
 
-    return code
+    # generate imported modules
+    self.processModules(dest, prefix, module)
+
+    # save code
+    self.saveModuleCode(dest, prefix, module.name)
+
+  def incIndent(self):
+    self.indent = self.indent + 2
+
+  def decIndent(self):
+    self.indent = self.indent - 2
+
+  def getIndent(self):
+    return ''.rjust(self.indent, ' ')
+
+  def processImports(self, prefix, module):
+    buf = []
+    for name, mod in module.modules.items():
+      if mod: buf.append('import %s.%s as %s\n' % (prefix, mod.name, name))
+      else: buf.append('import %s\n' % name)
+    return ''.join(buf)
+
+  def processModules(self, dest, prefix, module):
+    # gen imported modules
+    for name, mod in module.modules.items():
+      if mod: self.genModule(dest, prefix, mod)
 
   def processClasses(self, module):
     buf = []
@@ -113,8 +127,6 @@ class PyFormatter(object):
     return ''.join(vabuf) + ''.join(fnbuf)
 
   def genFunction(self, fn, cl):
-    raise Exception('not implemented')
-    
     params = []
     if cl: params.append('self')
     for name, decltype in fn.params:
@@ -192,4 +204,21 @@ class PyFormatter(object):
   def genExpr(self, node):
     gen = self.nodetypeToGen(node.nodetype)
     return gen(node)
+
+  def saveModuleCode(self, dest, prefix, name, code):
+    nspath = os.path.join(dest, prefix)
+    initname = os.path.join(nspath, '__init__.py')
+    modfile = os.path.join(nspath, name)
+
+    # create namespace dest+prefix path
+    if not os.path.exists(nspath):
+      shutil.mkdir(nspath)
+
+    # create __init__.py file
+    if not os.path.exists(initname):
+      open(os.path.join(nspath, '__init__.py'), 'a').close()
+
+    # write code to modfile
+    with open(modfile, 'w') as f:
+      f.write(code)
 

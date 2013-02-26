@@ -110,4 +110,35 @@ class Module(object):
     self.structs = {}
     self.classes = {}
 
+  def addVariable(self, node):
+    self.checkName(node.name)
+    self.variables[node.name] = node
+
+  def addFunction(self, node):
+    self.checkName(node.name)
+    self.functions[node.name] = node
+
+  def addEnum(self, node):
+    self.checkName(node.name)
+    self.enums[node.name] = node
+
+  def addStruct(self, node):
+    self.checkName(node.name)
+    self.structs[node.name] = node
+
+  def addClass(self, node):
+    self.checkName(node.name)
+    self.classes[node.name] = node
+
+  def checkName(self, name):
+    if self.variables.has_key(name):
+      raise Exception('module "%s" already have variable "%s"' % (self.name, name))
+    if self.functions.has_key(name):
+      raise Exception('module "%s" already have function "%s"' % (self.name, name))
+    if self.enums.has_key(name):
+      raise Exception('module "%s" already have enum "%s"' % (self.name, name))
+    if self.structs.has_key(name):
+      raise Exception('module "%s" already have struct "%s"' % (self.name, name))
+    if self.classes.has_key(name):
+      raise Exception('module "%s" already have class "%s"' % (self.name, name))
 
