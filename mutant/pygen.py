@@ -87,6 +87,8 @@ class PyGen(object):
     for cname, cl in module.classes.items():
       module.classes[cl.name] = self.genClass(cl)
 
+  # generators
+
   def genVariable(self, va, cl=None):
     """
     Change variable or create new.
@@ -190,10 +192,7 @@ class PyGen(object):
     return fc
 
   def genFunctionBody(self, nodes, cl=None):
-    buf = []
-    for node in nodes:
-      buf.append(genByNodetype(node, cl))
-    return buf
+    return [self.genByNodetype(node, cl) for node in nodes]
 
   def genByNodetype(self, node, cl=None):
     gen = self.nodetypeToGen(node.nodetype)

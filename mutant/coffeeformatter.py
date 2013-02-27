@@ -37,7 +37,7 @@ class CoffeeFormatter(object):
     # add imported modules as local variables
     imported = []
     for name, mod in module.modules.items():
-      imported.append('%s%s = window.%s\n' % (self.getIndent(), name, name))
+      imported.append('%s%s = window.%s\n' % (self.getIndent(), name, mod.name))
     code = code + ''.join(imported)
 
     # add module global namespace
@@ -58,6 +58,8 @@ class CoffeeFormatter(object):
 
     # variables
     for name, va in module.variables.items():
+      # skip urls variable, write before main
+      if name == 'urls': continue
       res = self.genVariableCode(va, isGlobal=True)
       code = code + res + '\n'
 
@@ -67,6 +69,9 @@ class CoffeeFormatter(object):
       if name == 'main': continue
       res = self.genFunctionCode(fn, isGlobal=True)
       code = code + res + '\n'
+    # write urls variable
+    if 'urls' in module.variables:
+      code = code + self.genVariableCode(module.variables['urls'], isGlobal=True)
     # write main function
     if 'main' in module.functions:
       code = code + self.genFunctionCode(module.functions['main'], isGlobal=True)

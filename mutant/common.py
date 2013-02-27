@@ -105,10 +105,13 @@ class Module(object):
     self.modules = {}
     # self.aliasModules = {}
     self.variables = {}
+    self.variables_order = []
     self.functions = {}
+    self.functions_order = []
     self.enums = {}
     self.structs = {}
     self.classes = {}
+    self.classes_order = []
 
   def addVariable(self, node):
     self.checkName(node.name)
