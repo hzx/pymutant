@@ -1,5 +1,7 @@
 from mutant.matches import Match
 from mutant.common import getTokensRange
+from mutant import errors
+
 
 def findCommaIndex(leftIndex, rightIndex, tokens):
   """
