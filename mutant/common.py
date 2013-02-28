@@ -19,7 +19,7 @@ def isClassName(module, name):
   Find name among struct and class names, and aliased modules
   """
   # search in classes
-  if module.classes.has_key(name) or module.structs.has_key(name):
+  if name in module.classes or name in module.structs:
     return True
   # check if name consistent
   res = dotre.split(name)
@@ -27,17 +27,17 @@ def isClassName(module, name):
     moduleName = res[0]
     className = res[1]
     # search in modules
-    if module.modules.has_key(moduleName):
+    if moduleName in module.modules:
       mod = module.modules[moduleName]
       # search in module classes
-      if mod.classes.has_key(className) or mod.structs.has_key(className):
+      if className in mod.classes or className in mod.structs:
         return True
   return False
 
 
 def isStructName(module, name):
   # search in structs
-  if module.structs.has_key(name):
+  if name in module.structs:
     return True
   # check if name consistent
   res = dotre.split(name)
@@ -45,10 +45,10 @@ def isStructName(module, name):
     moduleName = res[0]
     structName = res[1]
     # search in modules
-    if module.modules.has_key(moduleName):
+    if moduleName in module.modules:
       mod = module.modules[moduleName]
       # search in module structs
-      if mod.structs.has_key(structName):
+      if structName in mod.structs:
         return True
   return False
 
@@ -134,14 +134,14 @@ class Module(object):
     self.classes[node.name] = node
 
   def checkName(self, name):
-    if self.variables.has_key(name):
+    if name in self.variables:
       raise Exception('module "%s" already have variable "%s"' % (self.name, name))
-    if self.functions.has_key(name):
+    if name in self.functions:
       raise Exception('module "%s" already have function "%s"' % (self.name, name))
-    if self.enums.has_key(name):
+    if name in self.enums:
       raise Exception('module "%s" already have enum "%s"' % (self.name, name))
-    if self.structs.has_key(name):
+    if name in self.structs:
       raise Exception('module "%s" already have struct "%s"' % (self.name, name))
-    if self.classes.has_key(name):
+    if name in self.classes:
       raise Exception('module "%s" already have class "%s"' % (self.name, name))
 

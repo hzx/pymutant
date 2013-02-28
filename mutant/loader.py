@@ -48,7 +48,7 @@ class Loader(object):
 
   def loadModule(self, name, referer=None):
     # check cache for loaded module
-    if self.modules.has_key(name): return self.modules[name]
+    if name in self.modules: return self.modules[name]
 
     # load module source
     modulepath = self.getModulePath(name, referer)

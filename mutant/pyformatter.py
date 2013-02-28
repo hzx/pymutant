@@ -39,7 +39,7 @@ class PyFormatter(object):
     """
     Generate module code and all imported modules.
     """
-    if self.cache.has_key(module.name):
+    if module.name in self.cache:
       return self.cache[module.name]
 
     self.module = module

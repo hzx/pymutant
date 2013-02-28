@@ -28,7 +28,7 @@ class PyGen(object):
 
   def generateModule(self, module):
     # add to cache
-    if self.cache.has_key(module.name):
+    if module.name in self.cache:
       return
     self.cache[module.name] = module
 
@@ -214,16 +214,16 @@ class PyGen(object):
     if count > 1:
       buf = []
       # search module name first
-      if self.module.modules.has_key(first): 
+      if first in self.module.modules: 
         module = self.module.modules[first]
         # append module name to buf
         buf.append(first)
         # found enum name
-        if module.enums.has_key(parts[1]):
+        if parts[1] in module.enums:
           buf.append('%s_%s' % (parts[1], parts[2]))
         return '.'.join(buf)
       else:
-        if self.module.enums.has_key(first):
+        if first in self.module.enums:
           return '%s_%s' % (first, parts[1])
 
     return name

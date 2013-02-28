@@ -23,7 +23,7 @@ class CoffeeFormatter(object):
     return self.genModule(module)
 
   def genModule(self, module):
-    if self.cache.has_key(module.name):
+    if module.name in self.cache:
       return self.cache[module.name]
 
     self.module = module
@@ -176,6 +176,8 @@ class CoffeeFormatter(object):
     # todo(dem) rework with genexpr
     elif node.nodetype == 'functioncall':
       code = self.genFunctionCallCode(node)
+    elif node.nodetype == 'array_value':
+      code = self.genArrayValueCode(node)
     elif node.nodetype == 'array_body':
       itcode = ''
       notFirst = False
@@ -286,12 +288,7 @@ class CoffeeFormatter(object):
     return code
 
   def genValueCode(self, va):
-    # debug
-    if va.body == None:
-      print 'module "%s", value "%s"' % (self.module.name, va.value)
-
-    code = va.value + ' = ' + self.genVarBodyCode(va.body)
-    return code
+    return va.value if va.body == None else va.value + ' = ' + self.genVarBodyCode(va.body)
 
   def genFunctionCallCode(self, fc):
     # todo(dem) check func type (*, name, +, -, is, not)
