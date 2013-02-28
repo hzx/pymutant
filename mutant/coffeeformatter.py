@@ -175,16 +175,7 @@ class CoffeeFormatter(object):
         code = node.value
     # todo(dem) rework with genexpr
     elif node.nodetype == 'functioncall':
-      # create params code
-      par = ''
-      notFirst = False
-      for param in node.params:
-        if notFirst: par = par + ', '
-        par = par + self.genVarBodyCode(param)
-        notFirst = True
-      code = '%s(%s)' % (node.name, par)
-      if node.isConstructorCall:
-        code = 'new ' + code
+      code = self.genFunctionCallCode(node)
     elif node.nodetype == 'array_body':
       itcode = ''
       notFirst = False
@@ -316,16 +307,10 @@ class CoffeeFormatter(object):
       return '(%s %s %s)' % (self.genExprCode(fc.params[0]), fname, self.genExprCode(fc.params[1]))
 
     # function call
-    # create params code
-    par = ''
     prefix = ''
     if fc.isConstructorCall: prefix = 'new '
-    notFirst = False
-    for param in fc.params:
-      if notFirst: par = par + ', '
-      par = par + self.genExprCode(param)
-      notFirst = True
-    return '%s%s(%s)' % (prefix, fc.name, par)
+    buf = [self.genExprCode(param) for param in fc.params]
+    return '%s%s(%s)' % (prefix, fc.name, ', '.join(buf))
 
   def genArrayBodyCode(self, ab):
     itcode = ''
