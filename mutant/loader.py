@@ -44,7 +44,9 @@ class Loader(object):
       abspath = os.path.join(path, modulepath)
       if os.path.exists(abspath):
         return abspath
-    raise errors.ModuleNotFound(name, referer)
+    print 'WARNING: module not found "%s"' % name
+    return None
+    # raise errors.ModuleNotFound(name, referer)
 
   def loadModule(self, name, referer=None):
     # check cache for loaded module
@@ -52,6 +54,7 @@ class Loader(object):
 
     # load module source
     modulepath = self.getModulePath(name, referer)
+    if modulepath is None: return None
     sources = self.loadSources(modulepath)
     imports = self.searchImports(sources)
 

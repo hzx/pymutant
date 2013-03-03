@@ -51,6 +51,7 @@ class FunctionNode(Node):
 
   def __init__(self, decltype, name):
     self.nodetype = 'function'
+    self.attributes = ''
     self.decltype = decltype
     self.name = name
     self.params = []
@@ -360,6 +361,7 @@ class ValueNode(Node):
     self.isLitFloat = False
     self.isLitString = False
     self.isName = False
+    self.isTagString = False
 
   def setBody(self, node):
     self.body = node

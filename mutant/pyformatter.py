@@ -1,6 +1,7 @@
 import shutil
 import os.path
 import os
+from mutant import grammar
 
 
 class PyFormatter(object):
@@ -57,13 +58,13 @@ class PyFormatter(object):
     importsCode = self.processImports(prefix, module)
 
     # add modules code before to beginning
-    code = importsCode + classesCode + functionsCode + variablesCode
+    code = importsCode + '\n' + classesCode + functionsCode + variablesCode
 
     # generate imported modules
     self.processModules(dest, prefix, module)
 
     # save code
-    self.saveModuleCode(dest, prefix, module.name)
+    self.saveModuleCode(dest, prefix, module.name, code)
 
   def incIndent(self):
     self.indent = self.indent + 2
@@ -79,12 +80,15 @@ class PyFormatter(object):
     for name, mod in module.modules.items():
       if mod: buf.append('import %s.%s as %s\n' % (prefix, mod.name, name))
       else: buf.append('import %s\n' % name)
-    return ''.join(buf)
+    return '\n'.join(module.rawimports) + '\n' + ''.join(buf)
 
   def processModules(self, dest, prefix, module):
     # gen imported modules
     for name, mod in module.modules.items():
-      if mod: self.genModule(dest, prefix, mod)
+      if mod:
+        # skip model module
+        if len(mod.structs) > 0: continue
+        self.genModule(dest, prefix, mod)
 
   def processClasses(self, module):
     buf = []
@@ -108,6 +112,9 @@ class PyFormatter(object):
     return ''.join(buf)
 
   def genClass(self, cl):
+
+    decl = 'class %s(%s):\n' % (cl.name, cl.baseName) if cl.baseName else 'class %s:\n' % cl.name
+
     self.incIndent()
 
     # variables
@@ -124,25 +131,25 @@ class PyFormatter(object):
 
     self.decIndent()
 
-    return ''.join(vabuf) + ''.join(fnbuf)
+    return decl + ''.join(vabuf) + ''.join(fnbuf)
 
-  def genFunction(self, fn, cl):
+  def genFunction(self, fn, cl=None):
     params = []
     if cl: params.append('self')
     for name, decltype in fn.params:
       params.append(name)
-    decl = '%sdef %s(%s):\n' % (self.getIndent(), fn.name, ', '.join(params))
+    decl = '%s%s%sdef %s(%s):\n' % (self.getIndent(), fn.attributes, self.getIndent(), fn.name, ', '.join(params))
 
     body = self.genFunctionBody(fn.bodyNodes)
 
-    return decl + body
+    return decl + body + '\n'
 
   def genFunctionBody(self, nodes):
     self.incIndent()
 
     buf = []
     for node in nodes:
-      gen = self.nodetypeToGen(node.nodetype)
+      gen = self.nodetypeToGen[node.nodetype]
       buf.append(gen(node))
 
     self.decIndent()
@@ -150,14 +157,14 @@ class PyFormatter(object):
     return ''.join(buf)
 
   def genVariable(self, va):
-    buf = [self.getIndent(), va.name, self.genVarBody(va.body), '\n']
+    buf = [self.getIndent(), va.name, ' = ', self.genVarBody(va.body), '\n\n']
     return ''.join(buf)
 
   def genValue(self, va):
     return 'None' if va.value == 'none' else va.value
 
   def genVarBody(self, body):
-    gen = self.nodetypeToGen(body.nodetype)
+    gen = self.nodetypeToGen[body.nodetype]
     return gen(body)
 
   def genIf(self, ifn):
@@ -183,7 +190,7 @@ class PyFormatter(object):
     return '{%s}' % ', '.join(buf)
 
   def genReturn(self, ret):
-    buf = [self.getIndent(), 'return ', self.genVarBody(ret.body)]
+    buf = [self.getIndent(), 'return ', self.genVarBody(ret.body), '\n']
     return ''.join(buf)
 
   def genFunctionCall(self, fc):
@@ -195,24 +202,24 @@ class PyFormatter(object):
       return '(%s %s %s)' % (self.genExpr(fc.params[0]), fname, self.genExpr(fc.params[1]))
 
     # functioncall
-    prefix = 'new ' if ic.isConstructorCall else ''
+    prefix = 'new ' if fc.isConstructorCall else ''
     params = []
     for param in fc.params:
       params.append(self.genExpr(param))
     return '%s%s(%s)' % (prefix, fc.name, ', '.join(params))
 
   def genExpr(self, node):
-    gen = self.nodetypeToGen(node.nodetype)
+    gen = self.nodetypeToGen[node.nodetype]
     return gen(node)
 
   def saveModuleCode(self, dest, prefix, name, code):
     nspath = os.path.join(dest, prefix)
     initname = os.path.join(nspath, '__init__.py')
-    modfile = os.path.join(nspath, name)
+    modfile = os.path.join(nspath, name + '.py')
 
     # create namespace dest+prefix path
     if not os.path.exists(nspath):
-      shutil.mkdir(nspath)
+      os.mkdir(nspath)
 
     # create __init__.py file
     if not os.path.exists(initname):

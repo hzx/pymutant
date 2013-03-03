@@ -1,5 +1,6 @@
 from mutant import core
 from mutant import common
+from mutant import grammar
 import re
 
 
@@ -108,7 +109,7 @@ class PyGen(object):
     """
     if cl:
       # add self to params
-      fn.insert(['self', [common.Token(0, cl.name, grammar.NAME_TYPE)]])
+      fn.params.insert(0, ['self', [common.Token(0, cl.name, grammar.NAME_TYPE)]])
 
     fn.bodyNodes = self.genFunctionBody(fn.bodyNodes, cl)
 
@@ -166,7 +167,7 @@ class PyGen(object):
     return ab
 
   def genArrayValue(self, av, cl=None):
-    av.value = self.processValueFuncName(av.value, cl)
+    av.value = self.processValueFuncName(av.value)
     return av
 
   def genDictBody(self, db, cl=None):
@@ -179,12 +180,11 @@ class PyGen(object):
     return ret
 
   def genFunctionCall(self, fc, cl=None):
-    raise Exception('not implemented')
     # convert supercall
     if cl:
       fc.name = self.processSupercallName(fc.name, cl)
   
-    fc.name = self.processValueFuncName(fc.name, cl)
+    fc.name = self.processValueFuncName(fc.name)
 
     # convert params
     fc.params = [self.genByNodetype(param) for param in fc.params]
@@ -195,7 +195,7 @@ class PyGen(object):
     return [self.genByNodetype(node, cl) for node in nodes]
 
   def genByNodetype(self, node, cl=None):
-    gen = self.nodetypeToGen(node.nodetype)
+    gen = self.nodetypeToGen[node.nodetype]
     return gen(node, cl)
     
   def processValueFuncName(self, name):
@@ -229,7 +229,7 @@ class PyGen(object):
     return name
 
   def processSupercallName(self, name, cl):
-    parts = self.dotre.split(fc.name)
+    parts = self.dotre.split(name)
     count = len(parts)
     first = parts[0]
     if first == 'super':
