@@ -103,6 +103,8 @@ class Module(object):
     self.sources = sources
 
     self.rawimports = []
+    # module name and alias
+    self.imports = []
     self.modules = {}
     # self.aliasModules = {}
     self.variables = {}

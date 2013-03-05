@@ -1285,6 +1285,7 @@ class Parser(object):
 
       # shift cursor after , or after rightIndex
       leftCursor = endCursor + 1
+
     return arrayBody
 
   def parseDictBody(self, leftIndex, rightIndex, source):

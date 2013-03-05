@@ -214,12 +214,12 @@ class PyGen(object):
     if count > 1:
       buf = []
       # search module name first
-      if first in self.module.modules: 
+      if first in self.module.modules and self.module.modules[first]: 
         module = self.module.modules[first]
         # append module name to buf
         buf.append(first)
         # found enum name
-        if parts[1] in module.enums:
+        if parts[1] in self.module.enums:
           buf.append('%s_%s' % (parts[1], parts[2]))
         return '.'.join(buf)
       else:

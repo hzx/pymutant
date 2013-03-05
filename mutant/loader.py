@@ -67,6 +67,7 @@ class Loader(object):
 
     # load module imports
     for moduleName, alias in imports:
+      module.imports.append([moduleName, alias])
       linked = self.loadModule(moduleName, name)
       linkedName = None
       if len(alias) > 0: linkedName = alias

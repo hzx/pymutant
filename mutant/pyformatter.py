@@ -78,8 +78,13 @@ class PyFormatter(object):
   def processImports(self, prefix, module):
     buf = []
     for name, mod in module.modules.items():
-      if mod: buf.append('import %s.%s as %s\n' % (prefix, mod.name, name))
-      else: buf.append('import %s\n' % name)
+      if mod:
+        buf.append('import %s.%s as %s\n' % (prefix, mod.name, name))
+      else:
+        for iname, alias in module.imports:
+          if name == alias:
+            buf.append('import %s as %s\n' % (iname, alias))
+            break
     return '\n'.join(module.rawimports) + '\n' + ''.join(buf)
 
   def processModules(self, dest, prefix, module):
@@ -126,19 +131,18 @@ class PyFormatter(object):
     # functions
     fnbuf = []
     for fname, fn in cl.functions.items():
-      code = self.genFunction(fn)
+      code = self.genFunction(fn, cl)
       fnbuf.append(code)
 
     self.decIndent()
 
-    return decl + ''.join(vabuf) + ''.join(fnbuf)
+    return decl + ''.join(vabuf) + ''.join(fnbuf) + '\n'
 
   def genFunction(self, fn, cl=None):
     params = []
-    if cl: params.append('self')
     for name, decltype in fn.params:
       params.append(name)
-    decl = '%s%s%sdef %s(%s):\n' % (self.getIndent(), fn.attributes, self.getIndent(), fn.name, ', '.join(params))
+    decl = '%s%s\n%sdef %s(%s):\n' % (self.getIndent(), fn.attributes, self.getIndent(), fn.name, ', '.join(params))
 
     body = self.genFunctionBody(fn.bodyNodes)
 
@@ -150,7 +154,7 @@ class PyFormatter(object):
     buf = []
     for node in nodes:
       gen = self.nodetypeToGen[node.nodetype]
-      buf.append(gen(node))
+      buf.append(self.getIndent() + gen(node))
 
     self.decIndent()
 
