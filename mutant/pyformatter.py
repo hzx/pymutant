@@ -217,6 +217,9 @@ class PyFormatter(object):
     initname = os.path.join(nspath, '__init__.py')
     modfile = os.path.join(nspath, name + '.py')
 
+    header = '# -*- coding: utf-8 -*-\n'
+    code = header + code
+
     # create namespace dest+prefix path
     if not os.path.exists(nspath):
       os.mkdir(nspath)
