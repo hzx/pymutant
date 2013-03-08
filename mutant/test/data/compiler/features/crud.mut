@@ -3,6 +3,7 @@
 struct Ware {
   string id {};
   string name {};
+  int price {};
 }
 
 struct Store {
@@ -25,6 +26,7 @@ int insertAfterWhereCount = insert wares value ware before id is '11111';
 var selectOne = select one messages where name is 'test';
 var selectFrom = select from messages where name is 'test' order by createDate asc; 
 var selectConcat = select concat wares, oldwares;
+int waresPrice = select sum wares by price;
 int updateCount = update wares set name = 'TestWare' where id is '11111';
 var deleteFrom = delete from wares where name is 'test';
 

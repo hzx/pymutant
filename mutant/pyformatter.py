@@ -25,7 +25,12 @@ class PyFormatter(object):
 
     self.functionNames = {
         'is': '==',
-        'isnot': '!='
+        'isnot': '!=',
+      }
+    self.valueMap = {
+        'true': 'True',
+        'false': 'False',
+        'none': 'None',
       }
 
   def generate(self, dest, prefix, module):
@@ -165,7 +170,7 @@ class PyFormatter(object):
     return ''.join(buf)
 
   def genValue(self, va):
-    return 'None' if va.value == 'none' else va.value
+    return self.valueMap.get(va.value, va.value)
 
   def genVarBody(self, body):
     gen = self.nodetypeToGen[body.nodetype]
@@ -234,5 +239,11 @@ class PyFormatter(object):
 
     # write code to modfile
     with open(modfile, 'w') as f:
+      f.write(code)
+
+  def savePyCode(self, code, filename):
+    header = '# -*- coding: utf-8 -*-\n'
+    code = header + code
+    with open(filename, 'w') as f:
       f.write(code)
 
