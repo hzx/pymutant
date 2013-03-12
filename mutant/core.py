@@ -1,4 +1,5 @@
 from abc import abstractmethod
+import re
 
 
 class Param(object):
@@ -368,6 +369,9 @@ class ValueNode(Node):
 
   def setBodyReactive(self, isReactive):
     self.bodyReactive = isReactive
+
+  def checkLitString(self):
+    return re.match("^'.*'$", self.value) != None
 
 class ArrayBodyNode(Node):
   """
