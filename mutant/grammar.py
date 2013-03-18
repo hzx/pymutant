@@ -21,7 +21,7 @@ SYSTEM_TOKENS = [
     ]
 
 HTML_TAGS = [
-    'div', 'span', 'p', 'img', 'a', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'input', 'textarea', 'strong', 'ul', 'ol', 'li', 'tr', 'th', 'td'
+    'div', 'span', 'p', 'img', 'a', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'input', 'textarea', 'strong', 'ul', 'ol', 'li', 'tr', 'th', 'td', 'br',
     ]
 
 HTML_EVENTS = [

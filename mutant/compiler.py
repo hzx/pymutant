@@ -118,5 +118,5 @@ class Compiler(object):
           self.markConstructorFunctioncall(module, node.body)
       elif node.nodetype == 'if':
         if node.body: self.markConstructorInNodes(module, node.body)
-        if node.elseBody: self.markConstructorInNodes(node.elseBody)
+        if node.elseBody: self.markConstructorInNodes(module, node.elseBody)
 

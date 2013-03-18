@@ -52,20 +52,32 @@ def isStructName(module, name):
         return True
   return False
 
+def getStruct(module, name):
+  if name in module.structs:
+    return True
+  res = dotre.split(name)
+  if len(res) > 1:
+    moduleName = res[0]
+    structName = res[1]
+    if moduleName in module.modules:
+      mod = module.modules[moduleName]
+      if structName in mod.structs:
+        st = mod.structs[structName]
+        return st
+  return None
+
 
 def isStructValueName(module, name):
   """
   Search first name and check it must be world
   """
-  res = dore.split(name)
-  if len(res) == 1:
+  parts = dore.split(name)
+  if len(parts) == 1:
     return False
 
   moduleName = res[0]
   if moduleName != 'world':
     return False
-
-
 
 
 def getOnlyName(name):
