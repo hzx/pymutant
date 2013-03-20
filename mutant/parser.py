@@ -194,6 +194,10 @@ class Parser(object):
     grammar.setHandler('for_body', self.matchForBody)
     grammar.setHandler('parseForBody', self.parseForBody)
 
+    grammar.setHandler('while', self.createWhile)
+    grammar.setHandler('while_expression', self.matchWhileExpression)
+    grammar.setHandler('parseWhileExpression', self.parseWhileExpression)
+    
     grammar.setHandler('operator', self.handleOperator)
 
     # bind parsers
@@ -780,6 +784,30 @@ class Parser(object):
     nodes = self.parseByRules(grammar.function_body_rules, left, right, source)
 
     forNode.body = nodes
+
+  def createWhile(self, match, source):
+    """
+    Create core.WhileNode.
+    """
+    node = core.WhileNode()
+    self.runHandlers(node, match.handlers, source)
+    return node
+
+  def matchWhileExpression(self, left, right, source):
+    leftToken = source.tokens[left]
+    bracketIndex = findWordIndex('{', left, right, source.tokens)
+    if bracketIndex < 0:
+      raise Exception('while expression not have { bracket, linenum "%s", source "%s"' % (leftToken.linenum, source.filename))
+
+    match = Match(left, bracketIndex - 1)
+    match.handlers['parseWhileExpression'] = Match(left, bracketIndex - 1)
+
+    return match
+
+  def parseWhileExpression(self, whileNode, left, right, source):
+    if right - left <= 1: return
+
+    whileNode.expr = self.createExpression(Match(left, right), source)
 
   def findCloseTag(self, name, leftIndex, rightIndex, source):
     """

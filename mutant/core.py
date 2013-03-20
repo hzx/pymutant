@@ -340,6 +340,13 @@ class ForNode(Node):
     self.itemName = None
     self.body = []
 
+class WhileNode(Node):
+
+  def __init__(self):
+    self.nodetype = 'while'
+    self.expr = None
+    self.body = []
+
 # for calculations
 
 class ValueNode(Node):

@@ -257,6 +257,8 @@ class CoffeeFormatter(object):
         code = code + self.genIfCode(node) + '\n'
       elif node.nodetype == 'for':
         code = code + self.genForCode(node) + '\n'
+      elif node.nodetype == 'while':
+        code = code + self.genWhileCode(node) + '\n'
 
     return code
 
@@ -386,3 +388,15 @@ class CoffeeFormatter(object):
     self.decIndent()
 
     return code
+
+  def genWhileCode(self, whilen):
+    code = '%swhile %s\n' % (self.getIndent(), self.genExprCode(whilen.expr))
+
+    self.incIndent()
+
+    code = code + self.genFunctionBodyCode(whilen.body)
+
+    self.decIndent()
+
+    return code
+
