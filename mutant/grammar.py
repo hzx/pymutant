@@ -50,7 +50,7 @@ LITBOOL_TYPE = 'litbool'
 rules = {
     'import': 'import <module>(name) as <alias>(name) ;',
     'define': 'define <alias>(name) {define_body}!',
-    'variable': '<type>(var|{type}) <name>(name|order|event|class) {variable_body}!',
+    'variable': '<type>(var|{type}) <name>(name|order|event|class|count) {variable_body}!',
     'function': '{function_type} ({function_name})? {function_params}! {function_body}!',
     'enum': 'enum <name>(name) {enum_body}!',
     'interface': 'interface <name>(name) {interface_body}!',

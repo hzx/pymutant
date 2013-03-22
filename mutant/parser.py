@@ -875,7 +875,7 @@ class Parser(object):
         raise Exception('not enough tokens count "%d" for attribute, linenum "%d", source "%s"' % (indexDiff, nameToken.linenum, source.filename))
 
       # check attribute name
-      if not (nameToken.wordtype in ['name', 'class']):
+      if not (nameToken.wordtype in ['name', 'class', 'count']):
         raise Exception('tag attribute must begin from name token, linenum "%d", source "%s"' % (nameToken.linenum, source.filename))
       attrName = nameToken.word
 
@@ -1261,7 +1261,7 @@ class Parser(object):
         cursor = closedIndex + 1
         continue
       # add variable
-      if token.wordtype in ['name', 'litint', 'litfloat', 'litstring', 'litbool', 'none', 'asc', 'order', 'after', 'before']:
+      if token.wordtype in ['name', 'litint', 'litfloat', 'litstring', 'litbool', 'none', 'asc', 'order', 'after', 'before', 'count']:
         nodes.append({'kind': 'value', 'match': Match(cursor, cursor), 'weight': bracketWeight})
       # check bracket
       # set nodes additional weights
