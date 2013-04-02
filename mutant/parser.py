@@ -156,6 +156,7 @@ class Parser(object):
     grammar.setHandler('array_value', self.createArrayValue)
     grammar.setHandler('array_body', self.createArrayBody)
     grammar.setHandler('dict_body', self.createDictBody)
+    grammar.setHandler('dict_value', self.createDictValue)
     grammar.setHandler('match_array_body', self.matchArrayBody)
     grammar.setHandler('match_dict_body', self.matchDictBody)
 
@@ -326,6 +327,11 @@ class Parser(object):
     nodes = self.nodesByHandlers(match.handlers, source)
 
     return nodes[0]
+
+  def createDictValue(self, match, source):
+    value = match.params['value'][0].word
+    hsh = match.params['hsh'][0].word
+    return core.DictValueNode(value, hsh)
 
   def createInsert(self, match, source):
     """

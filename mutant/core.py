@@ -420,6 +420,13 @@ class DictBodyNode(Node):
   def addItem(self, name, node):
     self.items[name] = node
 
+class DictValueNode(Node):
+
+  def __init__(self, value, hsh):
+    self.nodetype = 'dict_value'
+    self.value = value
+    self.hsh = hsh
+
 class ReturnNode(Node):
   """
   Function return node

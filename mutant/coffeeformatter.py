@@ -165,42 +165,42 @@ class CoffeeFormatter(object):
   def getIndent(self):
     return ''.rjust(self.indent, ' ')
 
-  def genVarBodyCode(self, node):
-    code = ''
+  # def genVarBodyCode(self, node):
+  #   code = ''
 
-    if node.nodetype == 'value':
-      if node.value == 'none':
-        code = 'null'
-      else:
-        code = node.value
-    # todo(dem) rework with genexpr
-    elif node.nodetype == 'functioncall':
-      code = self.genFunctionCallCode(node)
-    elif node.nodetype == 'array_value':
-      code = self.genArrayValueCode(node)
-    elif node.nodetype == 'array_body':
-      itcode = ''
-      notFirst = False
-      for item in node.items:
-        if notFirst: itcode = itcode + ', '
-        itcode = itcode + self.genVarBodyCode(item)
-        notFirst = True
-      code = '[%s]' % (itcode)
-    elif node.nodetype == 'dict_body':
-      bcode = ''
-      notFirst = False
-      for name, item in node.items.items():
-        if notFirst: bcode = bcode + ', '
-        bcode = bcode + name + ': ' + self.genVarBodyCode(item)
-        notFirst = True
-      code = '{%s}' % (bcode)
+  #   if node.nodetype == 'value':
+  #     if node.value == 'none':
+  #       code = 'null'
+  #     else:
+  #       code = node.value
+  #   # todo(dem) rework with genexpr
+  #   elif node.nodetype == 'functioncall':
+  #     code = self.genFunctionCallCode(node)
+  #   elif node.nodetype == 'array_value':
+  #     code = self.genArrayValueCode(node)
+  #   elif node.nodetype == 'array_body':
+  #     itcode = ''
+  #     notFirst = False
+  #     for item in node.items:
+  #       if notFirst: itcode = itcode + ', '
+  #       itcode = itcode + self.genVarBodyCode(item)
+  #       notFirst = True
+  #     code = '[%s]' % (itcode)
+  #   elif node.nodetype == 'dict_body':
+  #     bcode = ''
+  #     notFirst = False
+  #     for name, item in node.items.items():
+  #       if notFirst: bcode = bcode + ', '
+  #       bcode = bcode + name + ': ' + self.genVarBodyCode(item)
+  #       notFirst = True
+  #     code = '{%s}' % (bcode)
 
-    return code
+  #   return code
 
   def genVariableCode(self, va, isGlobal):
     code = self.getIndent() + va.name
     if va.body:
-      bodycode = self.genVarBodyCode(va.body)
+      bodycode = self.genExprCode(va.body)#self.genVarBodyCode(va.body)
       if isGlobal:
         code = code + ' = ' + bodycode + '\n'
       else:
@@ -290,7 +290,7 @@ class CoffeeFormatter(object):
     return code
 
   def genValueCode(self, va):
-    return va.value if va.body == None else va.value + ' = ' + self.genVarBodyCode(va.body)
+    return va.value if va.body == None else va.value + ' = ' + self.genExprCode(va.body)#self.genVarBodyCode(va.body)
 
   def genFunctionCallCode(self, fc):
     # todo(dem) check func type (*, name, +, -, is, not)
@@ -332,6 +332,9 @@ class CoffeeFormatter(object):
         notFirst = True
       return '{%s}' % (bcode)
 
+  def genDictValueCode(self, dv):
+    return '%s[%s]' % (dv.value, dv.hsh)
+
   def genExprCode(self, node):
     code = ''
 
@@ -353,6 +356,8 @@ class CoffeeFormatter(object):
       code = self.genArrayValueCode(node)
     elif node.nodetype == 'dict_body':
       code = self.genDictBodyCode(node)
+    elif node.nodetype == 'dict_value':
+      code = self.genDictValueCode(node)
 
     return code
 

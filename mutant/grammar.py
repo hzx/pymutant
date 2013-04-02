@@ -86,6 +86,7 @@ rules = {
     'array_value': '<value>(name) [ <index>(litint) ]',
     'array_body': '{match_array_body}!',
     'dict_body': '{match_dict_body}!',
+    'dict_value': '<value>(name) [ <hsh>(litint|litstring|name) ]',
 
     'insert': 'insert <name>(name) value {insert_body}!',
     'select_count': 'select count <name>(name)',
@@ -138,7 +139,7 @@ handlers = {}
 
 global_rules = ['define', 'variable', 'function', 'enum', 'struct', 'class']
 define_body_rules = ['function_declaration', 'type']
-variable_body_rules = ['constructor_call', 'insert', 'select_sum', 'select_count', 'select_one', 'select_from', 'select_concat', 'update', 'delete_from', 'tag', 'array_body', 'array_value', 'dict_body', 'expression']
+variable_body_rules = ['constructor_call', 'insert', 'select_sum', 'select_count', 'select_one', 'select_from', 'select_concat', 'update', 'delete_from', 'tag', 'array_body', 'array_value', 'dict_body', 'dict_value', 'expression']
 function_body_rules = ['insert', 'update', 'delete_from', 'if', 'for', 'while', 'variable', 'variable_assign', 'function_return','expression']
 enum_body_rules = ['enum_var']
 struct_body_rules = ['variable']
