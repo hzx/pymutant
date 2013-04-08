@@ -259,6 +259,8 @@ class CoffeeFormatter(object):
         code = code + self.genForCode(node) + '\n'
       elif node.nodetype == 'while':
         code = code + self.genWhileCode(node) + '\n'
+      else:
+        raise Exception('unknown nodetype "%s"' % node.nodetype)
 
     return code
 
