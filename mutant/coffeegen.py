@@ -8,17 +8,19 @@ class CoffeeGen(object):
     # cache generated modules
     self.cache = {}
 
-    # self.nodetypeToGen = {
-    #     'value': self.genValue,
-    #     'variable': self.genVariable,
-    #     'if': self.genIf,
-    #     'for': self.genFor,
-    #     'array_body': self.genArrayBody,
-    #     'array_value': self.genArrayValue,
-    #     'dict_body': self.genDictBody,
-    #     'return': self.genReturn,
-    #     'functioncall': self.genFunctionCall,
-    #   }
+    self.nodetypeToGen = {
+        'value': self.genValue,
+        'variable': self.genVariable,
+        'if': self.genIf,
+        'for': self.genFor,
+        'while': self.genWhile,
+        'array_body': self.genArrayBody,
+        'array_value': self.genArrayValue,
+        'dict_body': self.genDictBody,
+        'dict_value': self.genDictValue,
+        'return': self.genReturn,
+        'functioncall': self.genFunctionCall,
+      }
 
   def generate(self, module):
     self.generateModule(module)
@@ -31,11 +33,11 @@ class CoffeeGen(object):
 
     self.module = module
 
-    # NEW
-    """
-
     # process classes
     self.processClasses(module)
+        
+    # process enums
+    self.processEnums(module)
 
     # process functions
     self.processFunctions(module)
@@ -43,22 +45,45 @@ class CoffeeGen(object):
     # process variables
     self.processVariables(module)
 
-    # process enums
-    self.processEnums(module)
+    # self.addNamespaces(module)
+
+    # MOVED TO FORMATTER
+    # add imported modules to window
+    # for name, mod in module.modules.items():
+    #   va = core.VariableNode([common.Token(0, 'var', 'var')], name)
+    #   va.body = core.ValueNode('window.' + mod.name)
+    #   module.variables[va.name] = va
 
     # process imported modules
     for name, mod in module.modules.items():
-      if mod: self.generateModule(mod)
+      # extern module have name and mod == None, skip it
+      if mod == None: continue
+      self.generateModule(mod)
 
-    """
-    # NEW END
-
+  def processClasses(self, module):
     # move all class variables in constructor
     for cn, cl in module.classes.items():
       self.moveVariablesToConstructor(cl)
       # for vn, va in cl.variables.items():
-        
 
+  def processFunctions(self, module):
+    # module functions
+    for fname, fn in module.functions.items():
+      if len(fn.bodyNodes) == 0:
+        print('len(fn.bodyNodes) == 0')
+      fn.bodyNodes = self.genFunctionBody(fn.bodyNodes)
+
+    # module classes functions
+    for cn, cl in module.classes.items():
+      for fname, fn in cl.functions.items():
+        if len(fn.bodyNodes) == 0:
+          print('len(fn.bodyNodes) == 0')
+        fn.bodyNodes = self.genFunctionBody(fn.bodyNodes, cl)
+
+  def processVariables(self, module):
+    pass
+
+  def processEnums(self, module):
     # convert all enums to variables
     for name, en in module.enums.items():
       va = core.VariableNode([common.Token(0, 'var', 'var')], en.name)
@@ -70,64 +95,44 @@ class CoffeeGen(object):
       va.body = body
       module.variables[va.name] = va
 
-    # self.addNamespaces(module)
-
-    # MOVED TO FORMATTER
-    # add imported modules to window
-    # for name, mod in module.modules.items():
-    #   va = core.VariableNode([common.Token(0, 'var', 'var')], name)
-    #   va.body = core.ValueNode('window.' + mod.name)
-    #   module.variables[va.name] = va
-
-    # generate imported modules
-    for name, mod in module.modules.items():
-      # extern module have name and mod == None, skip it
-      if mod == None: continue
-      self.generateModule(mod)
-
-  # NEW
-  """
-
-  def processClasses(self, module):
-    pass
-
-  def processFunctions(self, module):
-    pass
-
-  def processVariables(self, module):
-    pass
-
-  def processEnums(self, module):
-    pass
-
   # generators
 
   def genValue(self, val, cl=None):
-    pass
+    return val
 
   def genVariable(self, va, cl=None):
-    pass
+    return va
 
-  def genIf(self, ifn):
-    pass
+  def genIf(self, ifn, cl=None):
+    ifn.body = self.genFunctionBody(ifn.body, cl)
+    ifn.elseBody = self.genFunctionBody(ifn.elseBody, cl)
+    return ifn
 
   def genFor(self, forn, cl=None):
-    pass
+    forn.body = self.genFunctionBody(forn.body, cl)
+    return forn
+
+  def genWhile(self, wh, cl=None):
+    wh.body = self.genFunctionBody(wh.body, cl)
+    return wh
 
   def genArrayBody(self, ab, cl=None):
-    pass
+    return ab
 
   def genArrayValue(self, av, cl=None):
-    pass
+    return av
 
   def genDictBody(self, db, cl=None):
-    pass
+    return db
+
+  def genDictValue(self, dv, cl=None):
+    return dv
 
   def genReturn(self, ret, cl=None):
-    pass
+    return ret
 
   def genFunctionCall(self, fc, cl=None):
-    pass
+    return fc
 
   # custom generators
 
@@ -135,10 +140,27 @@ class CoffeeGen(object):
     pass
 
   def genFunctionBody(self, nodes, cl=None):
-    return [self.genByNodetype(node, cl) for node in nodes]
+    # return [self.genByNodetype(node, cl) for node in nodes]
+    buf = []
+    # if len(nodes) == 0:
+    #   print('genFunctionBody len(nodes) == 0')
+    #   print(repr(nodes))
+    for node in nodes:
+      buf.append(self.genByNodetype(node, cl))
+      # add constructor inits as values assign to buf
+      if node.nodetype in ['variable', 'value'] and \
+          node.body and node.body.nodetype == 'functioncall' and \
+          len(node.body.inits) > 0:
+        for name, expr in node.body.inits.items():
+          val = core.ValueNode(node.name + '.' + name)
+          val.body = expr
+          buf.append(val)
+    return buf
 
   def genByNodetype(self, node, cl=None):
-    gen = self.nodetypeToGen(node.nodetype)
+    gen = self.nodetypeToGen.get(node.nodetype, None)
+    if not gen:
+      raise Exception('unknown nodetype "%s" in nodetypeToGen map' % node.nodetype)
     return gen(node, cl)
 
   # process names
@@ -182,10 +204,6 @@ class CoffeeGen(object):
     #   return '.'.join(parts)
 
     return name
-  """
-
-  # NEW END
-
 
   def moveVariablesToConstructor(self, cl):
     # search function with name None
@@ -235,4 +253,15 @@ class CoffeeGen(object):
     # add all namespaced
     for nsva in nsvars:
       module.variables[nsva.name] = nsva
+
+  def processFunction(self, fn):
+    for node in fn.bodyNodes:
+      pass
+
+  def expandConstructorCall(self, fc):
+    if len(fc.inits) == 0:
+      return
+
+    # create constructor call
+    # create properties init
 

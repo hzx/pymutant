@@ -97,6 +97,7 @@ rules = {
     'delete_from': 'delete from <name>(name) {deletefrom_body}!',
     #return select sum order.foods by price;
     'select_sum': 'select sum <name>(name) by <by>(name)',
+    'move': 'move <name>(name) value <value>(name) {move_body}!',
 
     'orderby_param': '<name>(name) <order>(asc|desc)',
 
@@ -140,7 +141,7 @@ handlers = {}
 global_rules = ['define', 'variable', 'function', 'enum', 'struct', 'class']
 define_body_rules = ['function_declaration', 'type']
 variable_body_rules = ['constructor_call', 'insert', 'select_sum', 'select_count', 'select_one', 'select_from', 'select_concat', 'update', 'delete_from', 'tag', 'array_body', 'array_value', 'dict_body', 'dict_value', 'expression']
-function_body_rules = ['insert', 'update', 'delete_from', 'if', 'for', 'while', 'variable', 'variable_assign', 'function_return','expression']
+function_body_rules = ['move', 'insert', 'update', 'delete_from', 'if', 'for', 'while', 'variable', 'variable_assign', 'function_return','expression']
 enum_body_rules = ['enum_var']
 struct_body_rules = ['variable']
 class_body_rules = ['constructor', 'variable', 'function']

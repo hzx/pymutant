@@ -331,7 +331,7 @@ class ForNode(Node):
   """
   collName - string
   itemName - string
-  body - node
+  body - nodes
   """
 
   def __init__(self):

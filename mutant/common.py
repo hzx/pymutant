@@ -36,6 +36,8 @@ def isClassName(module, name):
 
 
 def isStructName(module, name):
+  if name in ['robject']:
+    return True
   # search in structs
   if name in module.structs:
     return True

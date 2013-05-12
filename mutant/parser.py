@@ -1141,7 +1141,6 @@ class Parser(object):
 
     return value
 
-
   def matchVariableAssign(self, left, right, source):
     # check count tokens >=4 : name = value ;
     if right - left < 3: return None
