@@ -64,7 +64,7 @@ rules = {
     'function_return': 'return ({operator}!)?',
     'function_call': '<name>(name|int|float) (',
 
-    'struct_variable': '<type>({type}) <name>(name) {constructor_init}!',
+    'struct_variable': '<type>({type}) <name>(name|count) {constructor_init}!',
 
     # 'constructor': '({function_params})! {function_body}!',
     # 'constructor': '( ) {function_body}!',
