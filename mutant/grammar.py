@@ -50,7 +50,7 @@ LITBOOL_TYPE = 'litbool'
 rules = {
     'import': 'import <module>(name) as <alias>(name) ;',
     'define': 'define <alias>(name) {define_body}!',
-    'variable': '<type>(var|{type}) <name>(name|order|event|class|count) {variable_body}!',
+    'variable': '<type>(var|{type}) <name>(name|order|event|class|count|value) {variable_body}!',
     'function': '{function_type} ({function_name})? {function_params}! {function_body}!',
     'enum': 'enum <name>(name) {enum_body}!',
     'interface': 'interface <name>(name) {interface_body}!',
@@ -60,11 +60,11 @@ rules = {
     'function_declaration': '{function_type} {function_params}! {function_body}!',
     'function_type': '<type>(void|{type})',
     'function_name': '<name>(name|insert|select|concat|update|delete|count)',
-    'function_param': '<type>(var|{type}) <name>(name|order|after|before|count|event)',
+    'function_param': '<type>(var|{type}) <name>(name|order|after|before|count|event|value)',
     'function_return': 'return ({operator}!)?',
     'function_call': '<name>(name|int|float) (',
 
-    'struct_variable': '<type>({type}) <name>(name|count) {constructor_init}!',
+    'struct_variable': '<type>({type}) <name>(name|count|value) {constructor_init}!',
 
     # 'constructor': '({function_params})! {function_body}!',
     # 'constructor': '( ) {function_body}!',

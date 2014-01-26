@@ -6,7 +6,7 @@ from mutant.matches import Match, mergeMatches, matchNodes, tokensToString, find
 
 
 class Parser(object):
-  
+
   def __init__(self):
     self.bracketCounter = BracketCounter()
 
@@ -198,7 +198,7 @@ class Parser(object):
     grammar.setHandler('while', self.createWhile)
     grammar.setHandler('while_expression', self.matchWhileExpression)
     grammar.setHandler('parseWhileExpression', self.parseWhileExpression)
-    
+
     grammar.setHandler('operator', self.handleOperator)
 
     # bind parsers
@@ -251,7 +251,7 @@ class Parser(object):
     name = match.params['name'][0].word
     decltype = match.params['type']
     var = core.VariableNode(decltype, name)
-    
+
     self.runHandlers(var, match.handlers, source)
 
     return var
@@ -276,7 +276,7 @@ class Parser(object):
     en = core.EnumNode(name)
 
     self.runHandlers(en, match.handlers, source)
-  
+
     return en
 
   def createStruct(self, match, source):
@@ -316,7 +316,7 @@ class Parser(object):
 
   def createArrayBody(self, match, source):
     nodes = self.nodesByHandlers(match.handlers, source)
-    
+
     if len(nodes) == 0:
       leftToken = source.tokens[match.leftIndex]
       raise Exception('createArrayBody nodes == 0, begin token "%s", linenum "%d", source "%s"' % (leftToken.word, leftToken.linenum, source.filename))
@@ -666,7 +666,7 @@ class Parser(object):
     self.runHandlers(ifNode, match.handlers, source)
 
     return ifNode
-      
+
   def matchIfBody(self, left, right, source):
     leftToken = source.tokens[left]
 
@@ -881,7 +881,7 @@ class Parser(object):
         raise Exception('not enough tokens count "%d" for attribute, linenum "%d", source "%s"' % (indexDiff, nameToken.linenum, source.filename))
 
       # check attribute name
-      if not (nameToken.wordtype in ['name', 'class', 'count']):
+      if not (nameToken.wordtype in ['name', 'class', 'count', 'value']):
         raise Exception('tag attribute must begin from name token, linenum "%d", source "%s"' % (nameToken.linenum, source.filename))
       attrName = nameToken.word
 
@@ -908,7 +908,7 @@ class Parser(object):
     cursor = leftIndex
     while cursor <= rightIndex:
       if rightIndex - cursor < 2: return -1
-      if source.tokens[cursor].wordtype in ['name', 'class'] and source.tokens[cursor+1].wordtype == '=':
+      if source.tokens[cursor].wordtype in ['name', 'class', 'value'] and source.tokens[cursor+1].wordtype == '=':
         return cursor
       cursor = cursor + 1
     return -1
@@ -1033,7 +1033,7 @@ class Parser(object):
     # think about this hardcode, above not work - return array of array (nodes of nodes)
     opMatch = match.handlers['parseOperator']
     nodes = self.parseOperator(opMatch.leftIndex, opMatch.rightIndex, source)
-    
+
     if len(nodes) != 1:
       raise Exception('return have one body node, source "%s"', source.filename)
 
@@ -1087,7 +1087,7 @@ class Parser(object):
     self.runHandlers(con, match.handlers, source)
 
     return con
-    
+
 
   def createConstructorCall(self, match, source):
     """
@@ -1228,7 +1228,7 @@ class Parser(object):
   def createExpression(self, match, source):
     """
     Create tree.
-    Return rootNode. 
+    Return rootNode.
     """
     funcCallRule = grammar.getRule('function_call')
 
@@ -1266,7 +1266,7 @@ class Parser(object):
         cursor = closedIndex + 1
         continue
       # add variable
-      if token.wordtype in ['name', 'litint', 'litfloat', 'litstring', 'litbool', 'none', 'asc', 'order', 'after', 'before', 'count']:
+      if token.wordtype in ['name', 'litint', 'litfloat', 'litstring', 'litbool', 'none', 'asc', 'desc', 'order', 'after', 'before', 'count']:
         nodes.append({'kind': 'value', 'match': Match(cursor, cursor), 'weight': bracketWeight})
       # check bracket
       # set nodes additional weights
@@ -1502,7 +1502,7 @@ class Parser(object):
       if orderIndex >= 0: whereRight = orderIndex-1
       whereExpression = self.createExpression(Match(whereIndex+1, whereRight), source)
       selectFrom.setWhere(whereExpression)
-    
+
     # set order by to selectFrom
     if orderIndex >= 0:
       # check by word
@@ -1538,7 +1538,7 @@ class Parser(object):
     """
     Parse html - tag and expression mix.
     Html expression not support logical operations with <, >;
-      wrap it in function if needed. 
+      wrap it in function if needed.
     Return expression, tag nodes.
     """
     leftCursor = left
